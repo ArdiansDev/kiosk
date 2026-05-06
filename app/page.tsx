@@ -1,64 +1,81 @@
+"use client";
+
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import bgImage from "./assets/bg.png";
+import bgDasar from "./assets/bg-dasar.png";
+import plnIcon from "./assets/pln-icon.png";
+import plnMobileIcon from "./assets/pln-mobile-icon.png";
+import touchIcon from "./assets/touch-icon.svg";
 
 export default function Home() {
+  const router = useRouter();
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+    <div className="relative flex flex-col flex-1 items-center justify-start min-h-screen overflow-hidden font-sans">
+      {/* Background */}
+      <Image
+        src={bgImage}
+        alt="Background"
+        fill
+        className="object-cover object-center -z-10"
+        priority
+      />
+      <Image
+        src={bgDasar}
+        alt="Background Dasar"
+        fill
+        className="object-cover object-center -z-20"
+        priority
+      />
+
+      {/* Top bar: PLN logo left, PLN Mobile right */}
+      <header className="flex w-full items-center justify-between px-8 pt-8">
+        <Image src={plnIcon} alt="PLN" width={72} height={72} priority />
         <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
+          src={plnMobileIcon}
+          alt="PLN Mobile"
+          width={72}
+          height={72}
           priority
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+      </header>
+
+      {/* Hero text */}
+      <main className="flex flex-col items-center text-center mt-12 px-8">
+        <h1 className="text-[70px] font-bold leading-none tracking-tight text-[#125D72] drop-shadow-sm">
+          SELAMAT
+        </h1>
+        <h1 className="text-[80px] font-bold leading-none tracking-tight text-[#1a7fa8] drop-shadow-sm">
+          DATANG
+        </h1>
+
+        <p className="mt-4 text-[22px] font-semibold text-[#125D72]">
+          di Layanan Self Service <span className="text-[#14A2BA]">PLN</span>
+        </p>
+
+        <p className="mt-3 text-base text-center text-black leading-relaxed">
+          Silakan gunakan layanan ini untuk kemudahan <br /> semua kebutuhan
+          kelistrikan Anda
+        </p>
+
+        {/* CTA Button */}
+        <button
+          onClick={() => router.push("/buku-tamu")}
+          className="mt-10 flex items-center rounded-2xl bg-linear-to-t from-[#1a6e8e] to-[#2aaecf] px-10 py-5 text-white shadow-lg active:scale-95 transition-transform cursor-pointer"
+        >
+          <div className="text-left pr-6">
+            <p className="text-lg font-bold leading-tight tracking-wide">
+              KETUK LAYAR
+            </p>
+            <p className="text-lg font-bold leading-tight tracking-wide">
+              UNTUK MULAI
+            </p>
+          </div>
+          <div className="w-px self-stretch bg-white/40 mx-2" />
+          <div className="pl-4">
+            <Image src={touchIcon} alt="Touch" width={44} height={44} />
+          </div>
+        </button>
       </main>
     </div>
   );
