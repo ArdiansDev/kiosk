@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { use } from "react";
 import bgDasar from "../assets/bg-dasar.png";
 import plnIcon from "../assets/pln-icon.png";
 import plnMobileIcon from "../assets/pln-mobile-icon.png";
@@ -23,52 +23,20 @@ const badgeStyle: Record<BadgeType, string> = {
 
 const fallbackBadge: BadgeType = "BACK OFFICE";
 
-const getTicketNumber = (requestId: string) => {
-  if (typeof window === "undefined") {
-    return "A-100";
-  }
-
-  const todayKey = new Date().toLocaleDateString("sv-SE");
-  const requestStorageKey = `kiosk-ticket:${todayKey}:${requestId}`;
-  const existingTicket = window.sessionStorage.getItem(requestStorageKey);
-
-  if (existingTicket) {
-    return existingTicket;
-  }
-
-  const currentSequence = Number(
-    window.localStorage.getItem(`kiosk-ticket-sequence:${todayKey}`) ?? "99",
-  );
-  const nextSequence = currentSequence + 1;
-  const nextTicket = `A-${String(nextSequence).padStart(3, "0")}`;
-
-  window.localStorage.setItem(
-    `kiosk-ticket-sequence:${todayKey}`,
-    String(nextSequence),
-  );
-  window.sessionStorage.setItem(requestStorageKey, nextTicket);
-
-  return nextTicket;
+type CetakTiketPageProps = {
+  searchParams: Promise<{
+    ticketNumber?: string | string[];
+    nama?: string | string[];
+    whatsapp?: string | string[];
+    keluhan?: string | string[];
+    badge?: string | string[];
+    dateText?: string | string[];
+    timeText?: string | string[];
+  }>;
 };
 
-const formatTicketDate = () => {
-  const now = new Date();
-  const dateText = now.toLocaleDateString("id-ID", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-  const timeText = now.toLocaleTimeString("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-  return {
-    dateText: dateText.charAt(0).toUpperCase() + dateText.slice(1),
-    timeText,
-  };
-};
+const readParam = (value: string | string[] | undefined) =>
+  Array.isArray(value) ? value[0] : value;
 
 const printIcon = (
   <svg
@@ -87,18 +55,21 @@ const printIcon = (
   </svg>
 );
 
-export default function CetakTiket() {
+export default function CetakTiket({ searchParams }: CetakTiketPageProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const { dateText, timeText } = formatTicketDate();
+  const resolvedSearchParams = use(searchParams);
 
-  const nama = searchParams.get("nama") || "Adipati Galih";
-  const whatsapp = searchParams.get("whatsapp") || "0812 3456 7890";
-  const keluhan = searchParams.get("keluhan") || "Penyelesaian P2TL";
-  const requestId = searchParams.get("requestId") || "default";
+  const ticketNumber = readParam(resolvedSearchParams.ticketNumber) || "A-100";
+  const nama = readParam(resolvedSearchParams.nama) || "Adipati Galih";
+  const whatsapp = readParam(resolvedSearchParams.whatsapp) || "0812 3456 7890";
+  const keluhan =
+    readParam(resolvedSearchParams.keluhan) || "Penyelesaian P2TL";
   const badge =
-    (searchParams.get("badge") as BadgeType | null) || fallbackBadge;
-  const [ticketNumber] = useState(() => getTicketNumber(requestId));
+    (readParam(resolvedSearchParams.badge) as BadgeType | undefined) ||
+    fallbackBadge;
+  const dateText =
+    readParam(resolvedSearchParams.dateText) || "Kamis, 30 April 2026";
+  const timeText = readParam(resolvedSearchParams.timeText) || "14.25";
 
   const handlePrint = () => {
     const params = new URLSearchParams({

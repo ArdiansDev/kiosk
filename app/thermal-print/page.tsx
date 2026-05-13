@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { use, useEffect } from "react";
 
 type BadgeType = "PLN MOBILE" | "INFO ONLINE" | "BACK OFFICE";
 
@@ -11,17 +10,37 @@ const badgeLabel: Record<BadgeType, string> = {
   "BACK OFFICE": "LAYANAN BACK OFFICE",
 };
 
-export default function ThermalPrintPage() {
-  const searchParams = useSearchParams();
+type ThermalPrintPageProps = {
+  searchParams: Promise<{
+    ticketNumber?: string | string[];
+    nama?: string | string[];
+    whatsapp?: string | string[];
+    keluhan?: string | string[];
+    badge?: string | string[];
+    dateText?: string | string[];
+    timeText?: string | string[];
+  }>;
+};
 
-  const ticketNumber = searchParams.get("ticketNumber") || "A-100";
-  const nama = searchParams.get("nama") || "Adipati Galih";
-  const whatsapp = searchParams.get("whatsapp") || "0812 3456 7890";
-  const keluhan = searchParams.get("keluhan") || "Penyelesaian P2TL";
+const readParam = (value: string | string[] | undefined) =>
+  Array.isArray(value) ? value[0] : value;
+
+export default function ThermalPrintPage({
+  searchParams,
+}: ThermalPrintPageProps) {
+  const resolvedSearchParams = use(searchParams);
+
+  const ticketNumber = readParam(resolvedSearchParams.ticketNumber) || "A-100";
+  const nama = readParam(resolvedSearchParams.nama) || "Adipati Galih";
+  const whatsapp = readParam(resolvedSearchParams.whatsapp) || "0812 3456 7890";
+  const keluhan =
+    readParam(resolvedSearchParams.keluhan) || "Penyelesaian P2TL";
   const badge =
-    (searchParams.get("badge") as BadgeType | null) || "BACK OFFICE";
-  const dateText = searchParams.get("dateText") || "Kamis, 30 April 2026";
-  const timeText = searchParams.get("timeText") || "14.25";
+    (readParam(resolvedSearchParams.badge) as BadgeType | null) ||
+    "BACK OFFICE";
+  const dateText =
+    readParam(resolvedSearchParams.dateText) || "Kamis, 30 April 2026";
+  const timeText = readParam(resolvedSearchParams.timeText) || "14.25";
 
   useEffect(() => {
     const printTimer = window.setTimeout(() => {

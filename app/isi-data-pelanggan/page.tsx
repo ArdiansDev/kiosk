@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { use, useState } from "react";
 import bgDasar from "../assets/bg-dasar.png";
 import plnIcon from "../assets/pln-icon.png";
 import plnMobileIcon from "../assets/pln-mobile-icon.png";
@@ -29,9 +29,21 @@ type FormState = {
   detail: string;
 };
 
-export default function IsiDataPelanggan() {
+type IsiDataPelangganPageProps = {
+  searchParams: Promise<{
+    title?: string | string[];
+    badge?: string | string[];
+  }>;
+};
+
+const readParam = (value: string | string[] | undefined) =>
+  Array.isArray(value) ? value[0] : value;
+
+export default function IsiDataPelanggan({
+  searchParams,
+}: IsiDataPelangganPageProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const resolvedSearchParams = use(searchParams);
   const [form, setForm] = useState<FormState>({
     nama: "",
     whatsapp: "",
@@ -40,26 +52,83 @@ export default function IsiDataPelanggan() {
     alamat: "",
     detail: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
-  const title = searchParams.get("title") || fallbackService.title;
+  const title = readParam(resolvedSearchParams.title) || fallbackService.title;
   const badge =
-    (searchParams.get("badge") as BadgeType | null) || fallbackService.badge;
+    (readParam(resolvedSearchParams.badge) as BadgeType | undefined) ||
+    fallbackService.badge;
 
   const updateField = (field: keyof FormState, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
-  const handleContinue = () => {
-    const params = new URLSearchParams({
-      title,
-      badge,
-      nama: form.nama,
-      whatsapp: form.whatsapp,
-      keluhan: form.detail || title,
-      requestId: crypto.randomUUID(),
-    });
+  const handleContinue = async () => {
+    if (!form.nama.trim() || !form.whatsapp.trim()) {
+      setSubmitError("Nama dan No WhatsApp wajib diisi.");
+      return;
+    }
 
-    router.push(`/cetak-tiket?${params.toString()}`);
+    setIsSubmitting(true);
+    setSubmitError("");
+
+    try {
+      const response = await fetch("/api/queue", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          serviceTitle: title,
+          badge,
+          name: form.nama,
+          whatsapp: form.whatsapp,
+          ktp: form.ktp,
+          customerId: form.pelangganId,
+          address: form.alamat,
+          detail: form.detail,
+        }),
+      });
+
+      const payload = (await response.json()) as {
+        error?: string;
+        entry?: {
+          ticketNumber: string;
+          name: string;
+          whatsapp: string;
+          detail: string;
+          badge: BadgeType;
+          dateText: string;
+          timeText: string;
+        };
+      };
+
+      if (!response.ok || !payload.entry) {
+        throw new Error(payload.error || "Data antrean gagal disimpan.");
+      }
+
+      const params = new URLSearchParams({
+        title,
+        badge: payload.entry.badge,
+        ticketNumber: payload.entry.ticketNumber,
+        nama: payload.entry.name,
+        whatsapp: payload.entry.whatsapp,
+        keluhan: payload.entry.detail,
+        dateText: payload.entry.dateText,
+        timeText: payload.entry.timeText,
+      });
+
+      router.push(`/cetak-tiket?${params.toString()}`);
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan saat membuat tiket antrean.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -195,6 +264,11 @@ export default function IsiDataPelanggan() {
               />
             </div>
           </div>
+          {submitError ? (
+            <div className="mt-5 rounded-xl border border-[#f1b6b6] bg-[#fff4f4] px-4 py-3 text-sm text-[#9d2f2f]">
+              {submitError}
+            </div>
+          ) : null}
           <div className="h-28" />
         </div>
       </div>
@@ -210,9 +284,11 @@ export default function IsiDataPelanggan() {
         <button
           type="button"
           onClick={handleContinue}
-          className="flex-1 cursor-pointer rounded-2xl bg-linear-to-r from-[#1a6e8e] to-[#2aaecf] py-5 text-base font-bold tracking-widest text-white shadow-md transition-transform active:scale-95"
+          disabled={isSubmitting}
+          className="flex-1 cursor-pointer rounded-2xl bg-linear-to-r from-[#1a6e8e] to-[#2aaecf] py-5 text-base font-bold tracking-widest text-white shadow-md transition-transform active:scale-95 disabled:cursor-wait disabled:opacity-70"
         >
-          LANJUT <span className="text-lg">›</span>
+          {isSubmitting ? "MENYIMPAN..." : "LANJUT"}{" "}
+          <span className="text-lg">›</span>
         </button>
       </div>
     </div>
