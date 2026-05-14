@@ -6,7 +6,8 @@ import { use, useState } from "react";
 import bgDasar from "../assets/bg-dasar.png";
 import plnIcon from "../assets/pln-icon.png";
 import plnMobileIcon from "../assets/pln-mobile-icon.png";
-
+import chevronLeft from "./../assets/chevron-left.svg";
+import chevronRight from "./../assets/chevron-right.svg";
 type BadgeType = "PLN MOBILE" | "INFO ONLINE" | "BACK OFFICE";
 
 const badgeStyle: Record<BadgeType, string> = {
@@ -273,22 +274,26 @@ export default function IsiDataPelanggan({
         </div>
       </div>
 
-      <div className="absolute right-4 bottom-6 left-4 flex gap-3">
+      <div className="absolute bottom-6 left-4 right-4 flex gap-3">
         <button
-          type="button"
-          onClick={() => router.back()}
-          className="flex-1 cursor-pointer rounded-2xl border border-gray-200 bg-white py-5 text-base font-bold tracking-widest text-[#125D72] shadow-md transition-transform active:scale-95"
+          onClick={() => router.push("/pilih-layanan")}
+          className="flex-1 flex items-center justify-center gap-2 bg-white py-5 text-base font-bold tracking-widest text-gray-800 shadow-md active:scale-95 transition-transform cursor-pointer rounded-2xl border border-gray-200"
         >
-          <span className="mr-2 text-lg">‹</span>KEMBALI
+          <Image src={chevronLeft} alt="Chevleft" width={13} height={13} />
+          <p className="text-xl">KEMBALI</p>
         </button>
         <button
           type="button"
           onClick={handleContinue}
-          disabled={isSubmitting}
-          className="flex-1 cursor-pointer rounded-2xl bg-linear-to-r from-[#1a6e8e] to-[#2aaecf] py-5 text-base font-bold tracking-widest text-white shadow-md transition-transform active:scale-95 disabled:cursor-wait disabled:opacity-70"
+          className="flex-1 flex items-center justify-center gap-2 bg-linear-to-r from-[#1a6e8e] to-[#2aaecf] py-5 text-base font-bold tracking-widest text-white shadow-md active:scale-95 transition-transform cursor-pointer rounded-2xl"
         >
-          {isSubmitting ? "MENYIMPAN..." : "LANJUT"}{" "}
-          <span className="text-lg">›</span>
+          <p className="text-xl">LANJUT</p>
+          <Image
+            src={chevronRight}
+            alt="Chevron Right"
+            width={13}
+            height={13}
+          />
         </button>
       </div>
     </div>

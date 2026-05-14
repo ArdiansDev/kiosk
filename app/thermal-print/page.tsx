@@ -62,17 +62,7 @@ export default function ThermalPrintPage({
   return (
     <main className="min-h-screen bg-white px-3 py-4 text-black">
       <div className="mx-auto" style={{ width: "72mm" }}>
-        <div className="screen-only mb-4 rounded border border-neutral-300 bg-neutral-50 p-3 text-center text-xs text-neutral-700">
-          Halaman ini dibuat untuk printer thermal 80mm dan akan mencetak
-          otomatis.
-        </div>
-
         <section className="border border-dashed border-black px-3 py-4 text-center">
-          <p className="text-xs font-semibold tracking-[0.2em]">
-            PLN SELF SERVICE
-          </p>
-          <p className="mt-1 text-[10px]">TIKET ANTRIAN PELANGGAN</p>
-
           <div className="my-4 border-t border-dashed border-black" />
 
           <p className="text-[11px] uppercase tracking-[0.18em]">
@@ -85,20 +75,19 @@ export default function ThermalPrintPage({
           <div className="my-4 border-t border-dashed border-black" />
 
           <div className="space-y-2 text-left text-[11px] leading-relaxed">
-            <div>
+            <div className="flex justify-between">
               <div className="font-semibold">Nama</div>
               <div>{nama}</div>
             </div>
-            <div>
+            <div className="flex justify-between">
               <div className="font-semibold">Keluhan</div>
               <div>{keluhan}</div>
             </div>
-            <div>
+            <div className="flex justify-between">
               <div className="font-semibold">No. HP</div>
               <div>{whatsapp}</div>
             </div>
-            <div>
-              <div className="font-semibold">Kategori</div>
+            <div className="flex justify-center badge-label">
               <div>{badgeLabel[badge]}</div>
             </div>
           </div>
@@ -109,14 +98,6 @@ export default function ThermalPrintPage({
             <div>{dateText}</div>
             <div>{timeText}</div>
           </div>
-
-          <div className="my-4 border-t border-dashed border-black" />
-
-          <p className="text-[10px] leading-relaxed">
-            Simpan tiket ini.
-            <br />
-            Nomor Anda akan segera dipanggil.
-          </p>
         </section>
       </div>
 
@@ -130,6 +111,11 @@ export default function ThermalPrintPage({
           html,
           body {
             background: #fff;
+            badge-label {
+              background: #125d72;
+              color: #fff;
+              padding: 2px 6px;
+            }
           }
 
           .screen-only {

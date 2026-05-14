@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import bgDasar from "../assets/bg-dasar.png";
 import plnIcon from "../assets/pln-icon.png";
 import plnMobileIcon from "../assets/pln-mobile-icon.png";
+import chevronLeft from "./../assets/chevron-left.svg";
+import chevronRight from "./../assets/chevron-right.svg";
 
 export default function BukuTamu() {
   const router = useRouter();
@@ -71,16 +73,23 @@ export default function BukuTamu() {
       {/* Bottom buttons */}
       <div className="absolute bottom-6 left-4 right-4 flex gap-3">
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push("/")}
           className="flex-1 flex items-center justify-center gap-2 bg-white py-5 text-base font-bold tracking-widest text-gray-800 shadow-md active:scale-95 transition-transform cursor-pointer rounded-2xl border border-gray-200"
         >
-          <span className="text-lg">‹</span> KEMBALI
+          <Image src={chevronLeft} alt="Chevleft" width={13} height={13} />
+          <p className="text-xl">KEMBALI</p>
         </button>
         <button
           onClick={() => router.push("/pilih-layanan")}
           className="flex-1 flex items-center justify-center gap-2 bg-linear-to-r from-[#1a6e8e] to-[#2aaecf] py-5 text-base font-bold tracking-widest text-white shadow-md active:scale-95 transition-transform cursor-pointer rounded-2xl"
         >
-          LANJUT <span className="text-lg">›</span>
+          <p className="text-xl">LANJUT</p>
+          <Image
+            src={chevronRight}
+            alt="Chevron Right"
+            width={13}
+            height={13}
+          />
         </button>
       </div>
     </div>

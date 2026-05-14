@@ -5,6 +5,7 @@ import {
 } from "@/lib/queue";
 import {
   getAdminLoginPath,
+  isAdminEnvironment,
   readAdminSessionFromCookieValue,
   ADMIN_SESSION_COOKIE_NAME,
 } from "@/lib/admin-auth";
@@ -13,6 +14,10 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
+  if (!isAdminEnvironment()) {
+    return NextResponse.json({ message: "Not Found" }, { status: 404 });
+  }
+
   const session = readAdminSessionFromCookieValue(
     request.cookies.get(ADMIN_SESSION_COOKIE_NAME)?.value,
   );

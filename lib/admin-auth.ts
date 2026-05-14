@@ -2,11 +2,12 @@ import "server-only";
 
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 export const ADMIN_SESSION_COOKIE_NAME = "kiosk_admin_session";
 
 const SESSION_TTL_SECONDS = 60 * 60 * 12;
+const ADMIN_APP_ENV = "admin";
 const DEFAULT_LOGIN_PATH = "/admin/login";
 
 type AdminSessionPayload = {
@@ -21,6 +22,19 @@ const getAdminConfig = () => ({
     process.env.ADMIN_SESSION_SECRET?.trim() ||
     "kiosk-admin-session-secret-2026-change-this",
 });
+
+const getAppEnv = () =>
+  process.env.APP_ENV?.trim().toLowerCase() ||
+  process.env.NEXT_PUBLIC_APP_ENV?.trim().toLowerCase() ||
+  "";
+
+export const isAdminEnvironment = () => getAppEnv() === ADMIN_APP_ENV;
+
+export const assertAdminEnvironment = () => {
+  if (!isAdminEnvironment()) {
+    notFound();
+  }
+};
 
 const safeCompareText = (left: string, right: string) => {
   const leftDigest = createHash("sha256").update(left).digest();
@@ -68,6 +82,10 @@ export const validateAdminCredentials = (
   username: string,
   password: string,
 ) => {
+  if (!isAdminEnvironment()) {
+    return false;
+  }
+
   const config = getAdminConfig();
 
   return (
@@ -77,6 +95,10 @@ export const validateAdminCredentials = (
 };
 
 export const readAdminSessionFromCookieValue = (value?: string | null) => {
+  if (!isAdminEnvironment()) {
+    return null;
+  }
+
   if (!value) {
     return null;
   }
@@ -120,6 +142,8 @@ export const getAdminSession = async () => {
 };
 
 export const requireAdminSession = async (nextPath?: string | null) => {
+  assertAdminEnvironment();
+
   const session = await getAdminSession();
 
   if (!session) {
@@ -130,6 +154,8 @@ export const requireAdminSession = async (nextPath?: string | null) => {
 };
 
 export const createAdminSession = async () => {
+  assertAdminEnvironment();
+
   const cookieStore = await cookies();
   const config = getAdminConfig();
   const { token, expiresAt } = createSessionToken(config.username);

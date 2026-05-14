@@ -84,7 +84,7 @@ export default function CetakTiket({ searchParams }: CetakTiketPageProps) {
     const printWindow = window.open(
       `/thermal-print?${params.toString()}`,
       "thermal-print",
-      "popup=yes,width=420,height=760",
+      "popup=no,width=420,height=760",
     );
 
     if (!printWindow) {

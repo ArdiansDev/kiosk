@@ -31,8 +31,10 @@ npm run dev
 
 ## Konfigurasi Login Admin
 
+- Fitur admin hanya aktif saat `APP_ENV=admin`.
 - Kredensial admin diambil dari `.env`.
 - Untuk lokal, default yang dipakai saat ini adalah `ADMIN_USERNAME=admin`.
+- Untuk env kiosk atau publik, gunakan nilai selain `admin` pada `APP_ENV` agar route admin tidak bisa dibuka.
 - Ganti `ADMIN_PASSWORD` dan `ADMIN_SESSION_SECRET` sebelum dipakai di lingkungan selain lokal.
 
 ## Prisma

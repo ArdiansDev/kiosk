@@ -1,6 +1,7 @@
 "use server";
 
 import {
+  assertAdminEnvironment,
   clearAdminSession,
   createAdminSession,
   sanitizeAdminNextPath,
@@ -16,6 +17,8 @@ export async function loginAdmin(
   _previousState: AdminLoginState,
   formData: FormData,
 ): Promise<AdminLoginState> {
+  assertAdminEnvironment();
+
   const username = String(formData.get("username") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const nextPath = sanitizeAdminNextPath(
@@ -39,6 +42,8 @@ export async function loginAdmin(
 }
 
 export async function logoutAdmin() {
+  assertAdminEnvironment();
+
   await clearAdminSession();
   redirect("/admin/login");
 }
