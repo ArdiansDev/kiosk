@@ -2,6 +2,23 @@ import { createQueueEntry, isQueueBadge } from "@/lib/queue";
 
 export const runtime = "nodejs";
 
+const getRemoteQueueUrl = (requestUrl: string) => {
+  const remoteBaseUrl = process.env.ELECTRON_API_BASE_URL?.trim();
+
+  if (!remoteBaseUrl) {
+    return null;
+  }
+
+  const targetUrl = new URL("/api/queue", remoteBaseUrl);
+  const currentOrigin = new URL(requestUrl).origin;
+
+  if (targetUrl.origin === currentOrigin) {
+    return null;
+  }
+
+  return targetUrl;
+};
+
 type CreateQueuePayload = {
   serviceTitle?: string;
   badge?: string;
@@ -14,6 +31,31 @@ type CreateQueuePayload = {
 };
 
 export async function POST(request: Request) {
+  const remoteQueueUrl = getRemoteQueueUrl(request.url);
+
+  if (remoteQueueUrl) {
+    const requestBody = await request.text();
+    const upstreamResponse = await fetch(remoteQueueUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type":
+          request.headers.get("content-type") || "application/json",
+      },
+      body: requestBody,
+      cache: "no-store",
+    });
+    const responseBody = await upstreamResponse.text();
+
+    return new Response(responseBody, {
+      status: upstreamResponse.status,
+      headers: {
+        "Content-Type":
+          upstreamResponse.headers.get("content-type") ||
+          "application/json; charset=utf-8",
+      },
+    });
+  }
+
   let payload: CreateQueuePayload;
 
   try {
