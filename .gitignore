@@ -44,3 +44,5 @@ prisma/*.db-journal
 *.tsbuildinfo
 next-env.d.ts
 /dist-electron/
+AGENTS.md
+CLAUDE.md
