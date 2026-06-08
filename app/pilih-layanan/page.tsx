@@ -8,6 +8,7 @@ import plnIcon from "../assets/pln-icon.png";
 import plnMobileIcon from "../assets/pln-mobile-icon.png";
 import chevronLeft from "./../assets/chevron-left.svg";
 import chevronRight from "./../assets/chevron-right.svg";
+import { IconLayanan, IconLayananNumber } from "./_components/icon-layanan";
 
 type BadgeType = "PLN MOBILE" | "INFO ONLINE" | "BACK OFFICE";
 
@@ -132,15 +133,26 @@ export default function PilihLayanan() {
               }`}
             >
               <div className="flex items-start justify-between gap-2">
-                <div className="h-10 w-10.75 shrink-0 rounded-sm bg-[#d9d9d9]" />
+                <div className="flex justify-between items-start">
+                  <span
+                    className={`mt-0.5 shrink-0 rounded-[3px]  w-3.5 h-3.5 flex justify-center items-center text-[6px] font-bold leading-none bg-[#22B0D8] text-white`}
+                  >
+                    {i + 1}
+                  </span>
+                  <IconLayanan
+                    number={i as IconLayananNumber}
+                    width={36}
+                    height={36}
+                  />
+                </div>
                 <span
-                  className={`mt-0.5 shrink-0 rounded-[3px] px-2 py-1 text-[9px] font-bold leading-none ${badgeStyle[service.badge]}`}
+                  className={`mt-0.5 shrink-0 rounded-[3px] px-2 py-1 text-[6px] font-bold leading-none ${badgeStyle[service.badge]}`}
                 >
                   {service.badge}
                 </span>
               </div>
 
-              <p className="mt-1 text-[10px] font-semibold uppercase leading-[1.45] text-[#5f666d]">
+              <p className="mt-1 text-[8px]  ml-4 font-semibold uppercase leading-[1.45] text-[#5f666d]">
                 {service.title}
               </p>
             </button>
