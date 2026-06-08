@@ -75,6 +75,99 @@ Untuk packaged app, URL API juga bisa dibaca saat runtime dari file `electron-co
 }
 ```
 
+## Build Electron untuk Produksi
+
+Untuk membuat installer Windows yang siap didistribusikan, ikuti langkah berikut:
+
+### Persiapan Build
+
+1. Pastikan semua dependensi sudah terinstall:
+
+```bash
+npm install
+```
+
+2. Pastikan database sudah di-migrate:
+
+```bash
+npm run prisma:migrate -- --name init_queue_admin
+```
+
+3. (Opsional) Set environment variables jika butuh konfigurasi khusus:
+
+```bash
+# Windows PowerShell
+$env:ELECTRON_API_BASE_URL="https://kiosk-api.example.com"
+$env:APP_ENV="admin"
+$env:ADMIN_USERNAME="admin"
+$env:ADMIN_PASSWORD="your-secure-password"
+$env:ADMIN_SESSION_SECRET="your-secret-key"
+
+# Linux/Mac
+export ELECTRON_API_BASE_URL="https://kiosk-api.example.com"
+export APP_ENV="admin"
+export ADMIN_USERNAME="admin"
+export ADMIN_PASSWORD="your-secure-password"
+export ADMIN_SESSION_SECRET="your-secret-key"
+```
+
+### Proses Build
+
+Jalankan command berikut untuk build aplikasi Electron:
+
+```bash
+npm run electron:build
+```
+
+Command ini akan:
+
+1. Build aplikasi Next.js dengan mode `standalone` (`npm run build`)
+2. Menyiapkan file-file yang dibutuhkan untuk Electron (`prepare-electron-build.cjs`)
+3. Package aplikasi menjadi installer Windows menggunakan `electron-builder`
+
+### Output Build
+
+Setelah build selesai, installer akan tersedia di folder `dist-electron/`:
+
+- `PLN Kiosk Setup X.X.X.exe` - Installer NSIS untuk Windows
+- `win-unpacked/` - Folder berisi aplikasi yang sudah di-unpack (untuk testing tanpa install)
+
+### Testing Build
+
+Untuk test aplikasi tanpa install:
+
+1. Buka folder `dist-electron/win-unpacked/`
+2. Jalankan `PLN Kiosk.exe`
+
+Untuk test installer:
+
+1. Jalankan file `PLN Kiosk Setup X.X.X.exe`
+2. Ikuti proses instalasi
+3. Aplikasi akan terinstall dan bisa dijalankan dari Start Menu atau Desktop
+
+### Troubleshooting Build
+
+**Error: Prisma Client tidak ditemukan**
+
+- Jalankan `npm run prisma:generate` sebelum build
+- Pastikan file `prisma/prisma/dev.db` ada
+
+**Error: Port sudah terpakai**
+
+- Pastikan tidak ada proses `npm run dev` atau server Next.js yang masih berjalan
+- Kill proses yang menggunakan port 3100
+
+**Aplikasi tidak bisa connect ke API**
+
+- Cek file `electron-config.json` di folder userData (biasanya di `C:\Users\[Username]\AppData\Roaming\PLN Kiosk\`)
+- Pastikan `apiBaseUrl` sudah benar
+- Atau set environment variable `ELECTRON_API_BASE_URL` sebelum build
+
+**Database tidak bisa diakses**
+
+- Database akan disalin dari `prisma/prisma/dev.db` ke folder aplikasi saat pertama kali dijalankan
+- Folder database aplikasi biasanya di `C:\Users\[Username]\AppData\Roaming\PLN Kiosk\`
+
 ## Fitur Admin
 
 - Login admin tersedia di `/admin/login`.
