@@ -258,7 +258,7 @@ const resolveRangeWindow = (
 export const createQueueEntry = async (input: CreateQueueEntryInput) => {
   const queueDate = formatDateKey(new Date());
 
-  const createdEntry = await prisma.$transaction(async (transaction) => {
+  const createdEntry = await prisma.$transaction(async (transaction: any) => {
     const counter = await transaction.dailyQueueCounter.upsert({
       where: { queueDate },
       update: { lastSequence: { increment: 1 } },
@@ -314,7 +314,8 @@ export const getQueueDashboard = async (
     entries: serializedEntries,
     byBadge: queueBadges.map((badge) => ({
       badge,
-      count: serializedEntries.filter((entry) => entry.badge === badge).length,
+      count: serializedEntries.filter((entry: any) => entry.badge === badge)
+        .length,
     })),
   };
 };

@@ -74,8 +74,11 @@ export default function PilihLayanan() {
       title: selectedService.title,
       badge: selectedService.badge,
     });
-
-    router.push(`/isi-data-pelanggan?${params.toString()}`);
+    if (selectedIndex < 5) {
+      router.push(`/tutorial?${selectedIndex.toString()}`);
+    } else {
+      router.push(`/isi-data-pelanggan?${params.toString()}`);
+    }
   };
 
   return (
