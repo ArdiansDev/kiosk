@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import bgImage from "../assets/bg.png";
 import bgDasar from "../assets/bg-dasar.png";
 import chevronLeft from "../assets/chevron-left.svg";
@@ -9,17 +10,7 @@ import chevronRight from "../assets/chevron-right.svg";
 import plnIcon from "../assets/pln-icon.png";
 import plnMobileIcon from "../assets/pln-mobile-icon.png";
 import { useState } from "react";
-
-const tutorialServices = [
-  { title: "LAPOR GANGGUAN JARINGAN DAN APP DISTRIBUSI PLN", pageCount: 5 },
-  { title: "LAPOR KELUHAN JARINGAN DAN APP DISTRIBUSI PLN", pageCount: 4 },
-  { title: "LAPOR KELUHAN TAGIHAN LISTRIK/TOKEN LISTRIK", pageCount: 3 },
-  {
-    title: "MENCARI INFORMASI LAYANAN DAN PROMO PB, PD DAN PESTA",
-    pageCount: 2,
-  },
-  { title: "LAYANAN EV CHARGING SPKLU", pageCount: 1 },
-];
+import { tutorialServices } from "./_data/dataTutorial";
 
 const parseStep = (searchParams: URLSearchParams) => {
   const fromNamedParam = Number.parseInt(searchParams.get("step") ?? "", 10);
@@ -36,7 +27,7 @@ const parseStep = (searchParams: URLSearchParams) => {
   return 0;
 };
 
-export default function TutorialPage() {
+function TutorialContent() {
   const [selectedStep, setSelectedStep] = useState(1);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -51,7 +42,7 @@ export default function TutorialPage() {
     }
   };
   const handleNext = () => {
-    if (selectedStep < selectedService.pageCount) {
+    if (selectedStep < selectedService.children.length) {
       setSelectedStep(selectedStep + 1);
     } else {
       router.push("/pilih-layanan");
@@ -102,10 +93,25 @@ export default function TutorialPage() {
           Ikuti langkah mudah berikut untuk melaporkan gangguan jaringan melalui
           PLN Mobile.
         </p>
+        <div className="flex gap-1.25 mt-10 rounded-2xl border text-left border-[#d9e1e7] bg-white px-7 py-6 shadow-[0_8px_24px_rgba(17,74,108,0.08)]">
+          <span
+            className={`mt-0.5 shrink-0 rounded-[3px]  w-5 h-5 flex justify-center items-center text-[12px] font-bold leading-none bg-[#22B0D8] text-white`}
+          >
+            {selectedStep}
+          </span>
+          <div>
+            <p className="text-[16px] text-[#125D72] font-semibold">
+              {selectedService.children?.[selectedStep - 1]?.title}
+            </p>
+            <p className="mt-2 text-[14px] text-[#125D72CC]">
+              {selectedService.children?.[selectedStep - 1]?.description}
+            </p>
+          </div>
+        </div>
         <Image
           src={`/tutorial/${step}_${selectedStep}.png`}
           alt={`Tutorial Step ${selectedStep}`}
-          width={600}
+          width={250}
           height={400}
           className="mt-6 rounded-lg border-4 border-[#2aaecf] shadow-lg"
           priority
@@ -134,5 +140,13 @@ export default function TutorialPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function TutorialPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TutorialContent />
+    </Suspense>
   );
 }

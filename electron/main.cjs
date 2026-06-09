@@ -132,7 +132,13 @@ const ensureStandaloneServer = async () => {
   }
 
   const serverPort = await findAvailablePort(PROD_SERVER_PORT_START);
-  const standaloneDir = path.join(app.getAppPath(), ".next", "standalone");
+
+  // When packaged, standalone is in resources/standalone
+  // When dev, it's in .next/standalone
+  const standaloneDir = app.isPackaged
+    ? path.join(process.resourcesPath, "standalone")
+    : path.join(app.getAppPath(), ".next", "standalone");
+
   const serverEntry = path.join(standaloneDir, "server.js");
 
   if (!fs.existsSync(serverEntry)) {
