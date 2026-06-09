@@ -122,40 +122,41 @@ export default function PilihLayanan() {
       <div className="flex-1 overflow-y-auto w-full px-4 mt-4 pb-28">
         <div className="grid grid-cols-3 gap-3">
           {services.map((service, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setSelectedIndex(i)}
-              className={`flex h-31 w-39.5 cursor-pointer flex-col rounded-2xl border bg-white px-2.5 py-3 text-left shadow-[0_8px_24px_rgba(17,74,108,0.08)] transition-transform active:scale-95 ${
-                selectedIndex === i
-                  ? "border-[#22B0D8] ring-2 ring-[#22B0D8]/20"
-                  : "border-[#d9e1e7]"
-              }`}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex justify-between items-start">
+            <div className="w-full flex justify-center" key={i}>
+              <button
+                type="button"
+                onClick={() => setSelectedIndex(i)}
+                className={`flex h-31 w-39.5 cursor-pointer flex-col rounded-2xl border bg-white px-2.5 py-3 text-left shadow-[0_8px_24px_rgba(17,74,108,0.08)] transition-transform active:scale-95 ${
+                  selectedIndex === i
+                    ? "border-[#22B0D8] ring-2 ring-[#22B0D8]/20"
+                    : "border-[#d9e1e7]"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex justify-between items-start">
+                    <span
+                      className={`mt-0.5 shrink-0 rounded-[3px]  w-3.5 h-3.5 flex justify-center items-center text-[6px] font-bold leading-none bg-[#22B0D8] text-white`}
+                    >
+                      {i + 1}
+                    </span>
+                    <IconLayanan
+                      number={i as IconLayananNumber}
+                      width={36}
+                      height={36}
+                    />
+                  </div>
                   <span
-                    className={`mt-0.5 shrink-0 rounded-[3px]  w-3.5 h-3.5 flex justify-center items-center text-[6px] font-bold leading-none bg-[#22B0D8] text-white`}
+                    className={`mt-0.5 shrink-0 rounded-[3px] px-2 py-1 text-[6px] font-bold leading-none ${badgeStyle[service.badge]}`}
                   >
-                    {i + 1}
+                    {service.badge}
                   </span>
-                  <IconLayanan
-                    number={i as IconLayananNumber}
-                    width={36}
-                    height={36}
-                  />
                 </div>
-                <span
-                  className={`mt-0.5 shrink-0 rounded-[3px] px-2 py-1 text-[6px] font-bold leading-none ${badgeStyle[service.badge]}`}
-                >
-                  {service.badge}
-                </span>
-              </div>
 
-              <p className="mt-1 text-[8px]  ml-4 font-semibold uppercase leading-[1.45] text-[#5f666d]">
-                {service.title}
-              </p>
-            </button>
+                <p className="mt-1 text-[8px]  ml-4 font-semibold uppercase leading-[1.45] text-[#5f666d]">
+                  {service.title}
+                </p>
+              </button>
+            </div>
           ))}
         </div>
       </div>
