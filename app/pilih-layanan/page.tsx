@@ -35,6 +35,9 @@ const services: { title: string; badge: BadgeType }[] = [
     badge: "INFO ONLINE",
   },
   { title: "MENCARI INFORMASI RESTITUSI UJL", badge: "INFO ONLINE" },
+  { title: "PENYELESAIAN P2TL", badge: "BACK OFFICE" },
+  { title: "PENYELESAIAN PRR", badge: "BACK OFFICE" },
+  { title: "PENYELESAIAN TUSBUNG", badge: "BACK OFFICE" },
   {
     title: "INFORMASI PENGGESERAN METER, TIANG DAN GARDU",
     badge: "INFO ONLINE",
@@ -53,9 +56,6 @@ const services: { title: string; badge: BadgeType }[] = [
     title: "INFO TERKAIT K2 DAN K3 KETENAGALISTRIKAN",
     badge: "INFO ONLINE",
   },
-  { title: "PENYELESAIAN P2TL", badge: "BACK OFFICE" },
-  { title: "PENYELESAIAN PRR", badge: "BACK OFFICE" },
-  { title: "PENYELESAIAN TUSBUNG", badge: "BACK OFFICE" },
 ];
 
 const badgeStyle: Record<BadgeType, string> = {
