@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { use } from "react";
+import { use, useState } from "react";
 import bgDasar from "../assets/bg-dasar.png";
 import plnIcon from "../assets/pln-icon.png";
 import plnMobileIcon from "../assets/pln-mobile-icon.png";
@@ -55,9 +55,40 @@ const printIcon = (
   </svg>
 );
 
+const checkIcon = (
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 24 24"
+    className="h-12 w-12"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="3"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M5 13l4 4L19 7" />
+  </svg>
+);
+
+const closeIcon = (
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 24 24"
+    className="h-6 w-6"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M6 6l12 12M18 6L6 18" />
+  </svg>
+);
+
 export default function CetakTiket({ searchParams }: CetakTiketPageProps) {
   const router = useRouter();
   const resolvedSearchParams = use(searchParams);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const ticketNumber = readParam(resolvedSearchParams.ticketNumber) || "A-100";
   const nama = readParam(resolvedSearchParams.nama) || "Adipati Galih";
@@ -90,6 +121,13 @@ export default function CetakTiket({ searchParams }: CetakTiketPageProps) {
     if (!printWindow) {
       window.location.href = `/thermal-print?${params.toString()}`;
     }
+
+    setShowSuccess(true);
+  };
+
+  const handleCloseSuccess = () => {
+    setShowSuccess(false);
+    router.push(`/feedback?ticketNumber=${encodeURIComponent(ticketNumber)}`);
   };
 
   return (
@@ -175,6 +213,54 @@ export default function CetakTiket({ searchParams }: CetakTiketPageProps) {
           CETAK TIKET
         </button>
       </div>
+
+      {showSuccess && (
+        <div
+          className="ticket-print-hide fixed inset-0 z-50 flex items-center justify-center bg-[#0c4459]/40 px-6 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="success-title"
+        >
+          <div className="relative w-full max-w-md rounded-3xl bg-white px-8 py-10 text-center shadow-[0_24px_60px_rgba(12,68,89,0.25)]">
+            <button
+              type="button"
+              onClick={handleCloseSuccess}
+              aria-label="Tutup"
+              className="absolute right-5 top-5 cursor-pointer text-[#3a3a3a] transition-transform active:scale-90"
+            >
+              {closeIcon}
+            </button>
+
+            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-[#22B0D8] text-white">
+              {checkIcon}
+            </div>
+
+            <h2
+              id="success-title"
+              className="mt-6 text-[26px] font-black tracking-tight text-[#125D72]"
+            >
+              Tiket berhasil dicetak!
+            </h2>
+
+            <p className="mx-auto mt-3 max-w-xs text-[14px] leading-relaxed text-[#6c6c6c]">
+              Silakan menunggu di ruang tunggu hingga nomor tiket antrian Anda
+              dipanggil untuk bertemu dengan{" "}
+              <span className="font-bold text-[#125D72]">
+                Tim Back Office PLN
+              </span>
+              .
+            </p>
+
+            <button
+              type="button"
+              onClick={handleCloseSuccess}
+              className="mt-8 w-full cursor-pointer rounded-2xl bg-linear-to-r from-[#1a6e8e] to-[#2aaecf] py-4 text-base font-bold tracking-wide text-white shadow-md transition-transform active:scale-95"
+            >
+              OKE, MENGERTI
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

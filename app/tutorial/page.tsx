@@ -109,7 +109,7 @@ function TutorialContent() {
           </div>
         </div>
         <Image
-          src={`/tutorial/${step}_${selectedStep}.png`}
+          src={`/tutorial/${step + 1}/${selectedStep}.png`}
           alt={`Tutorial Step ${selectedStep}`}
           width={250}
           height={400}

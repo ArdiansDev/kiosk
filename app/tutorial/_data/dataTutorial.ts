@@ -21,6 +21,33 @@ export const tutorialServices = [
         title: "Pilih Laporkan pemadaman sekarang ",
         description: "Pilih menu Laporkan pemadaman sekarang. ",
       },
+      {
+        title: "Pilih Pengaduan - Listrik Padam",
+        description:
+          "Jika masalah Anda belum selesai, pilih menu Pengaduan - Listrik Padam.",
+      },
+      {
+        title: "Pilih ID Pelanggan",
+        description:
+          "Cari ID Pelanggan Anda atau bisa dengan Gunakan titik lokasi.",
+      },
+      {
+        title: "Pilih Titik Lokasi",
+        description: "Cari atau langsung pilih titik lokasi Anda saat ini.",
+      },
+      {
+        title: "Isi Lokasi Pengaduan",
+        description: "Lengkapi informasi lokasi pengaduan Anda dengan benar.",
+      },
+      {
+        title: "Isi Pengaduan",
+        description:
+          "Isi deskripsi pengaduan, masukkan foto pengaduan, dan atur waktu kunjungan petugas. ",
+      },
+      {
+        title: "Kirim Pengaduan",
+        description: "Periksa kembali data sebelum klik Kirim Pengaduan.",
+      },
     ],
   },
   {

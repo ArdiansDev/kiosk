@@ -168,6 +168,25 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           ))}
         </section>
 
+        <section className="grid gap-4 md:grid-cols-2">
+          <article className="rounded-3xl bg-white p-5 shadow-[0_12px_32px_rgba(17,74,108,0.08)]">
+            <p className="text-sm font-medium text-[#6a8595]">Total Feedback</p>
+            <div className="mt-3 text-4xl font-black text-[#114a6c]">
+              {dashboard.totalFeedback}
+            </div>
+          </article>
+          <article className="rounded-3xl bg-white p-5 shadow-[0_12px_32px_rgba(17,74,108,0.08)]">
+            <p className="text-sm font-medium text-[#6a8595]">
+              Rata-rata Nilai
+            </p>
+            <div className="mt-3 text-4xl font-black text-[#114a6c]">
+              {dashboard.averageRating > 0
+                ? `${dashboard.averageRating} / 5`
+                : "-"}
+            </div>
+          </article>
+        </section>
+
         <section className="overflow-hidden rounded-[28px] bg-white shadow-[0_12px_40px_rgba(17,74,108,0.08)]">
           <div className="flex items-center justify-between border-b border-[#e5eef3] px-6 py-5">
             <div>
@@ -197,6 +216,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                     <th className="px-6 py-4 font-semibold">Kategori</th>
                     <th className="px-6 py-4 font-semibold">Layanan</th>
                     <th className="px-6 py-4 font-semibold">Detail</th>
+                    <th className="px-6 py-4 font-semibold">Feedback</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -214,6 +234,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                       serviceTitle: string;
                       detail: string;
                       address?: string;
+                      feedbackRating: number | null;
+                      feedbackMessage: string;
                     }) => (
                       <tr
                         key={entry.id}
@@ -257,6 +279,22 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                               {entry.address}
                             </div>
                           ) : null}
+                        </td>
+                        <td className="px-6 py-4">
+                          {entry.feedbackRating !== null ? (
+                            <>
+                              <span className="inline-flex items-center gap-1 rounded-full bg-[#dff4fb] px-3 py-1 text-xs font-bold text-[#136285]">
+                                {entry.feedbackRating} / 5
+                              </span>
+                              {entry.feedbackMessage ? (
+                                <div className="mt-1 text-xs text-[#6a8595]">
+                                  {entry.feedbackMessage}
+                                </div>
+                              ) : null}
+                            </>
+                          ) : (
+                            <span className="text-[#9bb0bd]">Belum ada</span>
+                          )}
                         </td>
                       </tr>
                     ),

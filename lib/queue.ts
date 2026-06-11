@@ -39,6 +39,8 @@ export type QueueEntryView = {
   createdAtLabel: string;
   dateText: string;
   timeText: string;
+  feedbackRating: number | null;
+  feedbackMessage: string;
 };
 
 type RangeWindow = {
@@ -168,21 +170,24 @@ export const formatTicketDate = (date: Date) => ({
   timeText: timeFormatter.format(date),
 });
 
-const serializeEntry = (entry: {
-  id: string;
-  queueDate: string;
-  sequence: number;
-  ticketNumber: string;
-  serviceTitle: string;
-  badge: string;
-  name: string;
-  whatsapp: string;
-  ktp: string | null;
-  customerId: string | null;
-  address: string | null;
-  detail: string;
-  createdAt: Date;
-}): QueueEntryView => {
+const serializeEntry = (
+  entry: {
+    id: string;
+    queueDate: string;
+    sequence: number;
+    ticketNumber: string;
+    serviceTitle: string;
+    badge: string;
+    name: string;
+    whatsapp: string;
+    ktp: string | null;
+    customerId: string | null;
+    address: string | null;
+    detail: string;
+    createdAt: Date;
+  },
+  feedback?: { rating: number; message: string | null } | null,
+): QueueEntryView => {
   const { dateText, timeText } = formatTicketDate(entry.createdAt);
 
   return {
@@ -202,6 +207,8 @@ const serializeEntry = (entry: {
     createdAtLabel: dateTimeFormatter.format(entry.createdAt),
     dateText,
     timeText,
+    feedbackRating: feedback?.rating ?? null,
+    feedbackMessage: feedback?.message ?? "",
   };
 };
 
@@ -258,7 +265,7 @@ const resolveRangeWindow = (
 export const createQueueEntry = async (input: CreateQueueEntryInput) => {
   const queueDate = formatDateKey(new Date());
 
-  const createdEntry = await prisma.$transaction(async (transaction: any) => {
+  const createdEntry = await prisma.$transaction(async (transaction) => {
     const counter = await transaction.dailyQueueCounter.upsert({
       where: { queueDate },
       update: { lastSequence: { increment: 1 } },
@@ -291,17 +298,59 @@ export const getQueueDashboard = async (
   anchorValue?: string | null,
 ) => {
   const window = resolveRangeWindow(range, anchorValue);
-  const entries = await prisma.queueEntry.findMany({
-    where: {
-      createdAt: {
-        gte: window.start,
-        lt: window.end,
+  const [entries, feedbackEntries] = await Promise.all([
+    prisma.queueEntry.findMany({
+      where: {
+        createdAt: {
+          gte: window.start,
+          lt: window.end,
+        },
       },
-    },
-    orderBy: [{ createdAt: "desc" }, { sequence: "desc" }],
-  });
+      orderBy: [{ createdAt: "desc" }, { sequence: "desc" }],
+    }),
+    prisma.feedback.findMany({
+      where: {
+        createdAt: {
+          gte: window.start,
+          lt: window.end,
+        },
+      },
+      orderBy: [{ createdAt: "desc" }],
+    }),
+  ]);
 
-  const serializedEntries = entries.map(serializeEntry);
+  // Petakan feedback terbaru berdasarkan nomor tiket.
+  const feedbackByTicket = new Map<
+    string,
+    { rating: number; message: string | null }
+  >();
+
+  for (const feedback of feedbackEntries) {
+    const ticketNumber = feedback.ticketNumber?.trim();
+
+    if (ticketNumber && !feedbackByTicket.has(ticketNumber)) {
+      feedbackByTicket.set(ticketNumber, {
+        rating: feedback.rating,
+        message: feedback.message,
+      });
+    }
+  }
+
+  const serializedEntries = entries.map((entry) =>
+    serializeEntry(entry, feedbackByTicket.get(entry.ticketNumber) ?? null),
+  );
+
+  const ratedEntries = serializedEntries.filter(
+    (entry: QueueEntryView) => entry.feedbackRating !== null,
+  );
+  const totalRating = ratedEntries.reduce(
+    (sum: number, entry: QueueEntryView) => sum + (entry.feedbackRating ?? 0),
+    0,
+  );
+  const averageRating =
+    ratedEntries.length > 0
+      ? Math.round((totalRating / ratedEntries.length) * 10) / 10
+      : 0;
 
   return {
     range,
@@ -314,9 +363,12 @@ export const getQueueDashboard = async (
     entries: serializedEntries,
     byBadge: queueBadges.map((badge) => ({
       badge,
-      count: serializedEntries.filter((entry: any) => entry.badge === badge)
-        .length,
+      count: serializedEntries.filter(
+        (entry: QueueEntryView) => entry.badge === badge,
+      ).length,
     })),
+    totalFeedback: ratedEntries.length,
+    averageRating,
   };
 };
 
@@ -335,6 +387,8 @@ export const buildQueueCsv = (entries: QueueEntryView[]) => {
     "Kategori",
     "Layanan",
     "Detail",
+    "Nilai Feedback",
+    "Masukan Feedback",
   ];
 
   const rows = entries.map((entry) => [
@@ -349,6 +403,8 @@ export const buildQueueCsv = (entries: QueueEntryView[]) => {
     entry.badge,
     entry.serviceTitle,
     entry.detail,
+    entry.feedbackRating !== null ? String(entry.feedbackRating) : "",
+    entry.feedbackMessage,
   ]);
 
   return [header, ...rows]

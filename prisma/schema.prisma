@@ -32,3 +32,25 @@ model DailyQueueCounter {
   lastSequence Int      @default(0)
   updatedAt    DateTime @updatedAt
 }
+
+model Feedback {
+  id           String   @id @default(cuid())
+  rating       Int
+  message      String?
+  ticketNumber String?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model TutorialImage {
+  id           String   @id @default(cuid())
+  serviceIndex Int
+  stepNumber   Int
+  imagePath    String
+  fileName     String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([serviceIndex, stepNumber])
+}
