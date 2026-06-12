@@ -2,7 +2,9 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { use, useState } from "react";
+import { use, useState, useRef, useEffect } from "react";
+import Keyboard from "react-simple-keyboard";
+import "react-simple-keyboard/build/css/index.css";
 import bgDasar from "../assets/bg-dasar.png";
 import plnIcon from "../assets/pln-icon.png";
 import plnMobileIcon from "../assets/pln-mobile-icon.png";
@@ -55,6 +57,8 @@ export default function IsiDataPelanggan({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [activeInput, setActiveInput] = useState<keyof FormState | null>(null);
+  const keyboardRef = useRef<any>(null);
 
   const title = readParam(resolvedSearchParams.title) || fallbackService.title;
   const badge =
@@ -64,6 +68,24 @@ export default function IsiDataPelanggan({
   const updateField = (field: keyof FormState, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
   };
+
+  const handleInputChange = (input: string) => {
+    if (activeInput) {
+      updateField(activeInput, input);
+    }
+  };
+
+  const handleKeyPress = (button: string) => {
+    if (button === "{enter}") {
+      setActiveInput(null);
+    }
+  };
+
+  useEffect(() => {
+    if (keyboardRef.current && activeInput) {
+      keyboardRef.current.setInput(form[activeInput]);
+    }
+  }, [activeInput]);
 
   const handleContinue = async () => {
     if (!form.nama.trim() || !form.whatsapp.trim()) {
@@ -199,6 +221,7 @@ export default function IsiDataPelanggan({
                 type="text"
                 value={form.nama}
                 onChange={(event) => updateField("nama", event.target.value)}
+                onFocus={() => setActiveInput("nama")}
                 className="h-12 w-full rounded-sm border border-[#c6d0d8] bg-white px-4 text-base text-[#1b1b1b] outline-none"
               />
             </div>
@@ -213,6 +236,7 @@ export default function IsiDataPelanggan({
                 onChange={(event) =>
                   updateField("whatsapp", event.target.value)
                 }
+                onFocus={() => setActiveInput("whatsapp")}
                 className="h-12 w-full rounded-sm border border-[#c6d0d8] bg-white px-4 text-base text-[#1b1b1b] outline-none"
               />
             </div>
@@ -225,6 +249,7 @@ export default function IsiDataPelanggan({
                 type="text"
                 value={form.ktp}
                 onChange={(event) => updateField("ktp", event.target.value)}
+                onFocus={() => setActiveInput("ktp")}
                 className="h-12 w-full rounded-sm border border-[#c6d0d8] bg-white px-4 text-base text-[#1b1b1b] outline-none"
               />
             </div>
@@ -239,6 +264,7 @@ export default function IsiDataPelanggan({
                 onChange={(event) =>
                   updateField("pelangganId", event.target.value)
                 }
+                onFocus={() => setActiveInput("pelangganId")}
                 className="h-12 w-full rounded-sm border border-[#c6d0d8] bg-white px-4 text-base text-[#1b1b1b] outline-none"
               />
             </div>
@@ -250,6 +276,7 @@ export default function IsiDataPelanggan({
               <textarea
                 value={form.alamat}
                 onChange={(event) => updateField("alamat", event.target.value)}
+                onFocus={() => setActiveInput("alamat")}
                 className="min-h-24 w-full resize-none rounded-sm border border-[#c6d0d8] bg-white px-4 py-3 text-base text-[#1b1b1b] outline-none"
               />
             </div>
@@ -261,6 +288,7 @@ export default function IsiDataPelanggan({
               <textarea
                 value={form.detail}
                 onChange={(event) => updateField("detail", event.target.value)}
+                onFocus={() => setActiveInput("detail")}
                 className="min-h-24 w-full resize-none rounded-sm border border-[#c6d0d8] bg-white px-4 py-3 text-base text-[#1b1b1b] outline-none"
               />
             </div>
@@ -296,6 +324,53 @@ export default function IsiDataPelanggan({
           />
         </button>
       </div>
+
+      {/* Virtual Keyboard */}
+      {activeInput && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-2xl border-t-2 border-gray-300">
+          <Keyboard
+            keyboardRef={(r: any) => (keyboardRef.current = r)}
+            layoutName={
+              activeInput === "whatsapp" ||
+              activeInput === "ktp" ||
+              activeInput === "pelangganId"
+                ? "numeric"
+                : "default"
+            }
+            onChange={handleInputChange}
+            onKeyPress={handleKeyPress}
+            inputName={activeInput}
+            layout={{
+              default: [
+                "q w e r t y u i o p",
+                "a s d f g h j k l",
+                "{shift} z x c v b n m {bksp}",
+                "{space} {enter}",
+              ],
+              numeric: [
+                "1 2 3",
+                "4 5 6",
+                "7 8 9",
+                "0 {bksp}",
+                "{space} {enter}",
+              ],
+            }}
+            display={{
+              "{enter}": "↵",
+              "{shift}": "⇧",
+              "{bksp}": "⌫",
+              "{space}": "Space",
+            }}
+            theme="hg-theme-default hg-layout-default"
+            buttonTheme={[
+              {
+                class: "hg-button-lg",
+                buttons: "{enter} {shift} {bksp} {space}",
+              },
+            ]}
+          />
+        </div>
+      )}
     </div>
   );
 }

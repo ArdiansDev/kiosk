@@ -2,6 +2,9 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState, useRef, useEffect } from "react";
+import Keyboard from "react-simple-keyboard";
+import "react-simple-keyboard/build/css/index.css";
 import bgDasar from "../assets/bg-dasar.png";
 import plnIcon from "../assets/pln-icon.png";
 import plnMobileIcon from "../assets/pln-mobile-icon.png";
@@ -10,6 +13,38 @@ import chevronRight from "./../assets/chevron-right.svg";
 
 export default function BukuTamu() {
   const router = useRouter();
+  const [nama, setNama] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [activeInput, setActiveInput] = useState<"nama" | "whatsapp" | null>(
+    null,
+  );
+  const keyboardRef = useRef<any>(null);
+
+  const handleInputChange = (input: string) => {
+    if (activeInput === "nama") {
+      setNama(input);
+    } else if (activeInput === "whatsapp") {
+      setWhatsapp(input);
+    }
+  };
+
+  const handleKeyPress = (button: string) => {
+    if (button === "{enter}") {
+      setActiveInput(null);
+    }
+  };
+
+  useEffect(() => {
+    if (keyboardRef.current) {
+      const currentValue =
+        activeInput === "nama"
+          ? nama
+          : activeInput === "whatsapp"
+            ? whatsapp
+            : "";
+      keyboardRef.current.setInput(currentValue);
+    }
+  }, [activeInput]);
 
   return (
     <div className="relative flex flex-col flex-1 items-center justify-start min-h-screen overflow-hidden font-sans">
@@ -54,6 +89,9 @@ export default function BukuTamu() {
             </label>
             <input
               type="text"
+              value={nama}
+              onChange={(e) => setNama(e.target.value)}
+              onFocus={() => setActiveInput("nama")}
               className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-800 outline-none focus:border-[#2aaecf] focus:ring-2 focus:ring-[#2aaecf]/30"
             />
           </div>
@@ -64,6 +102,9 @@ export default function BukuTamu() {
             </label>
             <input
               type="tel"
+              value={whatsapp}
+              onChange={(e) => setWhatsapp(e.target.value)}
+              onFocus={() => setActiveInput("whatsapp")}
               className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-800 outline-none focus:border-[#2aaecf] focus:ring-2 focus:ring-[#2aaecf]/30"
             />
           </div>
@@ -92,6 +133,47 @@ export default function BukuTamu() {
           />
         </button>
       </div>
+
+      {/* Virtual Keyboard */}
+      {activeInput && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-2xl border-t-2 border-gray-300">
+          <Keyboard
+            keyboardRef={(r: any) => (keyboardRef.current = r)}
+            layoutName={activeInput === "whatsapp" ? "numeric" : "default"}
+            onChange={handleInputChange}
+            onKeyPress={handleKeyPress}
+            inputName={activeInput}
+            layout={{
+              default: [
+                "q w e r t y u i o p",
+                "a s d f g h j k l",
+                "{shift} z x c v b n m {bksp}",
+                "{space} {enter}",
+              ],
+              numeric: [
+                "1 2 3",
+                "4 5 6",
+                "7 8 9",
+                "0 {bksp}",
+                "{space} {enter}",
+              ],
+            }}
+            display={{
+              "{enter}": "↵",
+              "{shift}": "⇧",
+              "{bksp}": "⌫",
+              "{space}": "Space",
+            }}
+            theme="hg-theme-default hg-layout-default"
+            buttonTheme={[
+              {
+                class: "hg-button-lg",
+                buttons: "{enter} {shift} {bksp} {space}",
+              },
+            ]}
+          />
+        </div>
+      )}
     </div>
   );
 }

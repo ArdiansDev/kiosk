@@ -2,7 +2,9 @@
 
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useState, useRef, useEffect } from "react";
+import Keyboard from "react-simple-keyboard";
+import "react-simple-keyboard/build/css/index.css";
 import bgDasar from "../assets/bg-dasar.png";
 import plnIcon from "../assets/pln-icon.png";
 import plnMobileIcon from "../assets/pln-mobile-icon.png";
@@ -35,6 +37,24 @@ function FeedbackContent() {
   const [showThanks, setShowThanks] = useState(false);
   const [showMore, setShowMore] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeInput, setActiveInput] = useState<"message" | null>(null);
+  const keyboardRef = useRef<any>(null);
+
+  const handleInputChange = (input: string) => {
+    setMessage(input);
+  };
+
+  const handleKeyPress = (button: string) => {
+    if (button === "{enter}") {
+      setActiveInput(null);
+    }
+  };
+
+  useEffect(() => {
+    if (keyboardRef.current && activeInput) {
+      keyboardRef.current.setInput(message);
+    }
+  }, [activeInput]);
 
   const handleSubmit = async () => {
     if (selectedRating === null || isSubmitting) {
@@ -154,6 +174,7 @@ function FeedbackContent() {
           <textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}
+            onFocus={() => setActiveInput("message")}
             placeholder="Tulis masukan anda disini..."
             rows={4}
             className="mt-3 w-full resize-none rounded-2xl border border-[#d9e1e7] bg-white px-5 py-4 text-base text-[#222] outline-none placeholder:text-[#b6b6b6] focus:border-[#2aaecf] focus:ring-2 focus:ring-[#2aaecf]/30"
@@ -260,6 +281,40 @@ function FeedbackContent() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Virtual Keyboard */}
+      {activeInput && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-2xl border-t-2 border-gray-300">
+          <Keyboard
+            keyboardRef={(r: any) => (keyboardRef.current = r)}
+            layoutName="default"
+            onChange={handleInputChange}
+            onKeyPress={handleKeyPress}
+            inputName={activeInput}
+            layout={{
+              default: [
+                "q w e r t y u i o p",
+                "a s d f g h j k l",
+                "{shift} z x c v b n m {bksp}",
+                "{space} {enter}",
+              ],
+            }}
+            display={{
+              "{enter}": "↵",
+              "{shift}": "⇧",
+              "{bksp}": "⌫",
+              "{space}": "Space",
+            }}
+            theme="hg-theme-default hg-layout-default"
+            buttonTheme={[
+              {
+                class: "hg-button-lg",
+                buttons: "{enter} {shift} {bksp} {space}",
+              },
+            ]}
+          />
         </div>
       )}
     </div>
