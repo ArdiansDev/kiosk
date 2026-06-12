@@ -59,32 +59,32 @@ export default function BukuTamu() {
 
       {/* Top bar */}
       <header className="flex w-full items-center justify-between px-8 pt-8">
-        <Image src={plnIcon} alt="PLN" width={72} height={72} priority />
+        <Image src={plnIcon} alt="PLN" width={200} height={71} priority />
         <Image
           src={plnMobileIcon}
           alt="PLN Mobile"
-          width={72}
-          height={72}
+          width={130}
+          height={130}
           priority
         />
       </header>
 
       {/* Content */}
       <main className="flex flex-col items-center text-center mt-10 px-8 w-full">
-        <h1 className="text-[4.5rem] font-black leading-none tracking-tight text-[#1a4f6e]">
+        <h1 className="text-[100px] font-black leading-none tracking-tight text-[#1a4f6e]">
           BUKU
         </h1>
-        <h2 className="text-[3rem] font-black leading-none tracking-tight text-[#2aaecf] -mt-2">
+        <h2 className="text-[80px] font-black leading-none tracking-tight text-[#2aaecf] -mt-2">
           TAMU DIGITAL
         </h2>
-        <p className="mt-4 text-base text-gray-500">
+        <p className="mt-4 text-[24px] text-gray-500">
           Masukkan Nama dan No WhatsApp anda disini
         </p>
 
         {/* Form */}
-        <form className="mt-10 w-full max-w-sm space-y-6">
+        <form className="mt-10  w-220 space-y-6">
           <div className="flex items-center gap-4">
-            <label className="w-32 text-left text-base font-semibold text-gray-800 shrink-0">
+            <label className="w-57.5 text-[32px] text-left text-base font-semibold text-gray-800 shrink-0">
               Nama
             </label>
             <input
@@ -92,12 +92,12 @@ export default function BukuTamu() {
               value={nama}
               onChange={(e) => setNama(e.target.value)}
               onFocus={() => setActiveInput("nama")}
-              className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-800 outline-none focus:border-[#2aaecf] focus:ring-2 focus:ring-[#2aaecf]/30"
+              className="flex-1 rounded-lg border h-24 border-gray-300 w-157.5 bg-white px-4 py-3 text-base text-gray-800 outline-none focus:border-[#2aaecf] focus:ring-2 focus:ring-[#2aaecf]/30"
             />
           </div>
 
           <div className="flex items-center gap-4">
-            <label className="w-32 text-left text-base font-semibold text-gray-800 shrink-0">
+            <label className="w-57.5 text-nowrap text-[32px] text-left text-base font-semibold text-gray-800 shrink-0">
               No WhatsApp
             </label>
             <input
@@ -105,26 +105,26 @@ export default function BukuTamu() {
               value={whatsapp}
               onChange={(e) => setWhatsapp(e.target.value)}
               onFocus={() => setActiveInput("whatsapp")}
-              className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-3 text-base text-gray-800 outline-none focus:border-[#2aaecf] focus:ring-2 focus:ring-[#2aaecf]/30"
+              className="flex-1 rounded-lg border border-gray-300 h-24 bg-white px-4 py-3 text-base text-gray-800 outline-none focus:border-[#2aaecf] focus:ring-2 focus:ring-[#2aaecf]/30"
             />
           </div>
         </form>
       </main>
 
       {/* Bottom buttons */}
-      <div className="absolute bottom-6 left-4 right-4 flex gap-3">
+      <div className="absolute bottom-24 left-4 right-4 flex gap-3">
         <button
           onClick={() => router.push("/")}
-          className="flex-1 flex items-center justify-center gap-2 bg-white py-5 text-base font-bold tracking-widest text-gray-800 shadow-md active:scale-95 transition-transform cursor-pointer rounded-2xl border border-gray-200"
+          className="flex-1 flex items-center justify-center gap-2 h-25.5 bg-white py-5 text-base font-bold tracking-widest text-gray-800 shadow-md active:scale-95 transition-transform cursor-pointer rounded-2xl border border-gray-200"
         >
           <Image src={chevronLeft} alt="Chevleft" width={13} height={13} />
-          <p className="text-xl">KEMBALI</p>
+          <p className="text-[32px]">KEMBALI</p>
         </button>
         <button
           onClick={() => router.push("/pilih-layanan")}
-          className="flex-1 flex items-center justify-center gap-2 bg-linear-to-r from-[#1a6e8e] to-[#2aaecf] py-5 text-base font-bold tracking-widest text-white shadow-md active:scale-95 transition-transform cursor-pointer rounded-2xl"
+          className="flex-1 flex items-center text-[32px] justify-center gap-2 h-25.5 bg-linear-to-r from-[#1a6e8e] to-[#2aaecf] py-5 text-base font-bold tracking-widest text-white shadow-md active:scale-95 transition-transform cursor-pointer rounded-2xl"
         >
-          <p className="text-xl">LANJUT</p>
+          <p className="text-[32px]">LANJUT</p>
           <Image
             src={chevronRight}
             alt="Chevron Right"

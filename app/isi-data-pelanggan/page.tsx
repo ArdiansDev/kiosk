@@ -10,6 +10,10 @@ import plnIcon from "../assets/pln-icon.png";
 import plnMobileIcon from "../assets/pln-mobile-icon.png";
 import chevronLeft from "./../assets/chevron-left.svg";
 import chevronRight from "./../assets/chevron-right.svg";
+import {
+  IconLayanan,
+  IconLayananNumber,
+} from "../pilih-layanan/_components/icon-layanan";
 type BadgeType = "PLN MOBILE" | "INFO ONLINE" | "BACK OFFICE";
 
 const badgeStyle: Record<BadgeType, string> = {
@@ -36,6 +40,7 @@ type IsiDataPelangganPageProps = {
   searchParams: Promise<{
     title?: string | string[];
     badge?: string | string[];
+    index?: string | string[];
   }>;
 };
 
@@ -64,6 +69,14 @@ export default function IsiDataPelanggan({
   const badge =
     (readParam(resolvedSearchParams.badge) as BadgeType | undefined) ||
     fallbackService.badge;
+  const iconIndex = (() => {
+    const parsedIndex = Number(readParam(resolvedSearchParams.index));
+    return Number.isInteger(parsedIndex) &&
+      parsedIndex >= 0 &&
+      parsedIndex <= 17
+      ? (parsedIndex as IconLayananNumber)
+      : 0;
+  })();
 
   const updateField = (field: keyof FormState, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -164,57 +177,59 @@ export default function IsiDataPelanggan({
         priority
       />
 
-      <header className="absolute top-0 left-0 right-0 flex w-full items-center justify-between px-8 pt-8">
-        <Image src={plnIcon} alt="PLN" width={72} height={72} priority />
+      <header className="flex w-full items-center justify-between px-8 pt-6">
+        <Image src={plnIcon} alt="PLN" width={200} height={71} priority />
         <Image
           src={plnMobileIcon}
           alt="PLN Mobile"
-          width={72}
-          height={72}
+          width={130}
+          height={130}
           priority
         />
       </header>
 
-      <div className="mt-16 w-full px-4 pb-28">
-        <div className="text-center">
-          <h1 className="text-[31px] font-black leading-none tracking-tight text-[#125D72]">
+      <div className="mt-2 w-full max-w-220 px-0 pb-28">
+        <div className="hidden text-center">
+          <h1 className="text-[60px] font-black leading-none tracking-tight text-[#125D72]">
             ISI DATA PELANGGAN
           </h1>
-          <p className="mt-1 text-[13px] text-[#5f666d]">
+          <p className="mt-1 text-[24px] text-[#5f666d]">
             Lengkapi data berikut untuk melanjutkan layanan
           </p>
         </div>
 
-        <div className="mt-3 text-[12px] text-[#6a7076]">
-          Layanan yang dipilih:
-        </div>
+        <div className="text-[15px] text-[#6a7076]">Layanan yang dipilih:</div>
 
-        <div className="mt-2 flex items-center gap-3 rounded-2xl border border-[#d9e1e7] bg-white px-3 py-3 shadow-[0_8px_24px_rgba(17,74,108,0.08)]">
-          <div className="h-10 w-10 shrink-0 rounded-sm bg-[#d9d9d9]" />
+        <div className="mt-2 flex h-22 items-center gap-3 rounded-lg border border-[#d9e1e7] bg-white px-7 py-3 shadow-[0_8px_24px_rgba(17,74,108,0.08)]">
+          <IconLayanan
+            number={iconIndex as IconLayananNumber}
+            width={52}
+            height={52}
+          />
           <div className="min-w-0 flex-1">
             <span
-              className={`inline-flex rounded-[3px] px-2 py-1 text-[9px] font-bold leading-none ${badgeStyle[badge]}`}
+              className={`inline-flex rounded-[3px] px-2 py-1 text-[8px] font-bold leading-none ${badgeStyle[badge]}`}
             >
               {badge}
             </span>
-            <p className="mt-1 text-[11px] font-semibold uppercase leading-tight text-[#22B0D8]">
+            <p className="mt-1 text-[20px] font-bold uppercase leading-tight text-[#125D72]">
               {title}
             </p>
           </div>
           <button
             type="button"
             onClick={() => router.back()}
-            className="text-3xl leading-none text-black"
+            className="text-[42px] leading-none text-black"
             aria-label="Kembali ke pilih layanan"
           >
             ×
           </button>
         </div>
 
-        <div className="mt-3 rounded-2xl border border-[#d9e1e7] bg-white px-4 py-4 shadow-[0_8px_24px_rgba(17,74,108,0.08)]">
-          <div className="space-y-5">
-            <div className="grid grid-cols-[140px_1fr] items-start gap-x-4 gap-y-2">
-              <label className="pt-3 text-[12px] font-medium text-[#161616]">
+        <div className="mt-6 min-h-215 border border-[#d9e1e7] bg-white px-8 py-8 shadow-[0_8px_24px_rgba(17,74,108,0.06)]">
+          <div className="space-y-6">
+            <div className="grid grid-cols-[270px_1fr] items-start gap-x-6 gap-y-2">
+              <label className="pt-5 text-[18px] font-medium text-[#161616] w-full">
                 Nama
               </label>
               <input
@@ -222,12 +237,12 @@ export default function IsiDataPelanggan({
                 value={form.nama}
                 onChange={(event) => updateField("nama", event.target.value)}
                 onFocus={() => setActiveInput("nama")}
-                className="h-12 w-full rounded-sm border border-[#c6d0d8] bg-white px-4 text-base text-[#1b1b1b] outline-none"
+                className="h-18 w-full rounded-md border border-[#c6d0d8] bg-white px-4 text-[20px] text-[#1b1b1b] outline-none"
               />
             </div>
 
-            <div className="grid grid-cols-[140px_1fr] items-start gap-x-4 gap-y-2">
-              <label className="pt-3 text-[12px] font-medium text-[#161616]">
+            <div className="grid grid-cols-[270px_1fr] items-start gap-x-6 gap-y-2">
+              <label className="pt-5 text-[18px] font-medium text-[#161616] w-full">
                 No WhatsApp
               </label>
               <input
@@ -237,12 +252,12 @@ export default function IsiDataPelanggan({
                   updateField("whatsapp", event.target.value)
                 }
                 onFocus={() => setActiveInput("whatsapp")}
-                className="h-12 w-full rounded-sm border border-[#c6d0d8] bg-white px-4 text-base text-[#1b1b1b] outline-none"
+                className="h-18 w-full rounded-md border border-[#c6d0d8] bg-white px-4 text-[20px] text-[#1b1b1b] outline-none"
               />
             </div>
 
-            <div className="grid grid-cols-[140px_1fr] items-start gap-x-4 gap-y-2">
-              <label className="pt-3 text-[12px] font-medium text-[#161616]">
+            <div className="grid grid-cols-[270px_1fr] items-start gap-x-6 gap-y-2">
+              <label className="pt-5 text-[18px] font-medium text-[#161616] w-full">
                 No KTP
               </label>
               <input
@@ -250,12 +265,12 @@ export default function IsiDataPelanggan({
                 value={form.ktp}
                 onChange={(event) => updateField("ktp", event.target.value)}
                 onFocus={() => setActiveInput("ktp")}
-                className="h-12 w-full rounded-sm border border-[#c6d0d8] bg-white px-4 text-base text-[#1b1b1b] outline-none"
+                className="h-18 w-full rounded-md border border-[#c6d0d8] bg-white px-4 text-[20px] text-[#1b1b1b] outline-none"
               />
             </div>
 
-            <div className="grid grid-cols-[140px_1fr] items-start gap-x-4 gap-y-2">
-              <label className="pt-3 text-[12px] font-medium text-[#161616]">
+            <div className="grid grid-cols-[270px_1fr] items-start gap-x-6 gap-y-2">
+              <label className="pt-5 text-[18px] font-medium text-[#161616] w-full">
                 ID Pelanggan
               </label>
               <input
@@ -265,31 +280,31 @@ export default function IsiDataPelanggan({
                   updateField("pelangganId", event.target.value)
                 }
                 onFocus={() => setActiveInput("pelangganId")}
-                className="h-12 w-full rounded-sm border border-[#c6d0d8] bg-white px-4 text-base text-[#1b1b1b] outline-none"
+                className="h-18 w-full rounded-md border border-[#c6d0d8] bg-white px-4 text-[20px] text-[#1b1b1b] outline-none"
               />
             </div>
 
-            <div className="grid grid-cols-[140px_1fr] items-start gap-x-4 gap-y-2">
-              <label className="pt-3 text-[12px] font-medium text-[#161616]">
+            <div className="grid grid-cols-[270px_1fr] items-start gap-x-6 gap-y-2">
+              <label className="pt-5 text-[18px] font-medium text-[#161616] w-full">
                 Alamat Rumah
               </label>
               <textarea
                 value={form.alamat}
                 onChange={(event) => updateField("alamat", event.target.value)}
                 onFocus={() => setActiveInput("alamat")}
-                className="min-h-24 w-full resize-none rounded-sm border border-[#c6d0d8] bg-white px-4 py-3 text-base text-[#1b1b1b] outline-none"
+                className="min-h-29 w-full resize-none rounded-md border border-[#c6d0d8] bg-white px-4 py-3 text-[20px] text-[#1b1b1b] outline-none"
               />
             </div>
 
-            <div className="grid grid-cols-[140px_1fr] items-start gap-x-4 gap-y-2">
-              <label className="pt-3 text-[12px] font-medium text-[#161616]">
+            <div className="grid grid-cols-[270px_1fr] items-start gap-x-6 gap-y-2">
+              <label className="pt-1 text-[18px] font-medium leading-tight text-[#161616] w-full">
                 Detail kebutuhan pelanggan sesuai layanan yang dipilih
               </label>
               <textarea
                 value={form.detail}
                 onChange={(event) => updateField("detail", event.target.value)}
                 onFocus={() => setActiveInput("detail")}
-                className="min-h-24 w-full resize-none rounded-sm border border-[#c6d0d8] bg-white px-4 py-3 text-base text-[#1b1b1b] outline-none"
+                className="min-h-29 w-full resize-none rounded-md border border-[#c6d0d8] bg-white px-4 py-3 text-[20px] text-[#1b1b1b] outline-none"
               />
             </div>
           </div>
@@ -298,24 +313,21 @@ export default function IsiDataPelanggan({
               {submitError}
             </div>
           ) : null}
-          <div className="h-28" />
         </div>
       </div>
-
-      <div className="absolute bottom-6 left-4 right-4 flex gap-3">
+      <div className="absolute bottom-24 left-4 right-4 flex gap-3">
         <button
           onClick={() => router.push("/pilih-layanan")}
-          className="flex-1 flex items-center justify-center gap-2 bg-white py-5 text-base font-bold tracking-widest text-gray-800 shadow-md active:scale-95 transition-transform cursor-pointer rounded-2xl border border-gray-200"
+          className="flex-1 flex items-center justify-center gap-2 h-25.5 bg-white py-5 text-base font-bold tracking-widest text-gray-800 shadow-md active:scale-95 transition-transform cursor-pointer rounded-2xl border border-gray-200"
         >
           <Image src={chevronLeft} alt="Chevleft" width={13} height={13} />
-          <p className="text-xl">KEMBALI</p>
+          <p className="text-[32px]">KEMBALI</p>
         </button>
         <button
-          type="button"
-          onClick={handleContinue}
-          className="flex-1 flex items-center justify-center gap-2 bg-linear-to-r from-[#1a6e8e] to-[#2aaecf] py-5 text-base font-bold tracking-widest text-white shadow-md active:scale-95 transition-transform cursor-pointer rounded-2xl"
+          onClick={() => handleContinue()}
+          className="flex-1 flex items-center text-[32px] justify-center gap-2 h-25.5 bg-linear-to-r from-[#1a6e8e] to-[#2aaecf] py-5 text-base font-bold tracking-widest text-white shadow-md active:scale-95 transition-transform cursor-pointer rounded-2xl"
         >
-          <p className="text-xl">LANJUT</p>
+          <p className="text-[32px]">LANJUT</p>
           <Image
             src={chevronRight}
             alt="Chevron Right"

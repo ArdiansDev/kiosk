@@ -77,15 +77,15 @@ function TutorialContent() {
       </header>
 
       <main className="mx-auto flex w-full max-w-170 flex-1 flex-col items-center px-6 pb-36 pt-24 text-center">
-        <span className="inline-flex rounded-full bg-[#2aaecf] px-6 py-2 text-[34px] font-bold tracking-wide text-white shadow-[0_6px_16px_rgba(0,90,130,0.25)] md:text-[22px]">
+        <span className="inline-flex rounded-full bg-[#2aaecf] px-6 py-2 text-[42px] font-bold tracking-wide text-white shadow-[0_6px_16px_rgba(0,90,130,0.25)] md:text-[22px]">
           TUTORIAL
         </span>
 
-        <h1 className="mt-4 text-[53px] font-black leading-none tracking-tight text-[#11617b] md:text-[38px]">
+        <h1 className="mt-4 text-[60px] font-black leading-none tracking-tight text-[#11617b] md:text-[60px]">
           PLN <span className="text-[#2aaecf]">MOBILE</span>
         </h1>
 
-        <h2 className="mt-3 max-w-140 text-[42px] font-black uppercase leading-tight tracking-tight text-[#0f5870] md:text-[31px]">
+        <h2 className="mt-3 max-w-140 text-[32px] font-semibold uppercase leading-tight tracking-tight text-[#0f5870] md:text-[31px]">
           {selectedService.title}
         </h2>
 
@@ -93,50 +93,60 @@ function TutorialContent() {
           Ikuti langkah mudah berikut untuk melaporkan gangguan jaringan melalui
           PLN Mobile.
         </p>
-        <div className="flex gap-1.25 mt-10 rounded-2xl border text-left border-[#d9e1e7] bg-white px-7 py-6 shadow-[0_8px_24px_rgba(17,74,108,0.08)]">
+        <div className="flex gap-1.25 mt-10 rounded-2xl border text-left border-[#d9e1e7] bg-white px-7 w-[880px] py-6 shadow-[0_8px_24px_rgba(17,74,108,0.08)]">
           <span
-            className={`mt-0.5 shrink-0 rounded-[3px]  w-5 h-5 flex justify-center items-center text-[12px] font-bold leading-none bg-[#22B0D8] text-white`}
+            className={`mt-0.5 shrink-0 rounded-[3px]  w-11 h-10 flex justify-center items-center text-[20px] font-bold leading-none bg-[#22B0D8] text-white`}
           >
             {selectedStep}
           </span>
           <div>
-            <p className="text-[16px] text-[#125D72] font-semibold">
+            <p className="text-[24px] text-[#125D72] font-semibold">
               {selectedService.children?.[selectedStep - 1]?.title}
             </p>
-            <p className="mt-2 text-[14px] text-[#125D72CC]">
+            <p className="mt-2 text-[22px] text-[#125D72CC]">
               {selectedService.children?.[selectedStep - 1]?.description}
             </p>
+            {selectedService.children?.[selectedStep - 1]?.children && (
+              <ul className="mt-2 text-[22px] text-[#6a7076]">
+                {selectedService?.children?.[selectedStep - 1]?.children.map(
+                  (child, index) => (
+                    <li key={index} className="list-disc list-inside">
+                      {child}
+                    </li>
+                  ),
+                )}
+              </ul>
+            )}
           </div>
         </div>
         <Image
-          src={`/tutorial/${step + 1}/${selectedStep}.png`}
+          src={`/tutorial/${step < 6 ? 1 : step + 1}/${selectedStep}.png`}
           alt={`Tutorial Step ${selectedStep}`}
-          width={250}
-          height={400}
+          width={450}
+          height={901}
           className="mt-6 rounded-lg border-4 border-[#2aaecf] shadow-lg"
           priority
         />
       </main>
-
-      <div className="absolute bottom-8 left-4 right-4 mx-auto flex max-w-170 gap-4">
+      <div className="absolute bottom-24 left-4 right-4 flex gap-3">
         <button
-          type="button"
           onClick={() => handleBack()}
-          className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-[#24a9d0] bg-[#f6f9fb] py-5 text-xl font-bold tracking-wide text-[#125D72] shadow-[0_8px_20px_rgba(17,74,108,0.18)] transition-transform active:scale-95 md:py-4 md:text-lg"
+          className="flex-1 flex items-center justify-center gap-2 h-25.5 bg-white py-5 text-base font-bold tracking-widest text-gray-800 shadow-md active:scale-95 transition-transform cursor-pointer rounded-2xl border border-gray-200"
         >
-          <Image src={chevronLeft} alt="Kembali" width={13} height={13} />
-          KEMBALI
+          <Image src={chevronLeft} alt="Chevleft" width={13} height={13} />
+          <p className="text-[32px]">KEMBALI</p>
         </button>
-
         <button
-          type="button"
-          onClick={() => {
-            handleNext();
-          }}
-          className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-[#1a6e8e] to-[#2aaecf] py-5 text-xl font-bold tracking-wide text-white shadow-[0_8px_20px_rgba(10,93,126,0.35)] transition-transform active:scale-95 md:py-4 md:text-lg"
+          onClick={() => handleNext()}
+          className="flex-1 flex items-center text-[32px] justify-center gap-2 h-25.5 bg-linear-to-r from-[#1a6e8e] to-[#2aaecf] py-5 text-base font-bold tracking-widest text-white shadow-md active:scale-95 transition-transform cursor-pointer rounded-2xl"
         >
-          LANJUT
-          <Image src={chevronRight} alt="Lanjut" width={13} height={13} />
+          <p className="text-[32px]">LANJUT</p>
+          <Image
+            src={chevronRight}
+            alt="Chevron Right"
+            width={13}
+            height={13}
+          />
         </button>
       </div>
     </div>

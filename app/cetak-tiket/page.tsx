@@ -140,13 +140,13 @@ export default function CetakTiket({ searchParams }: CetakTiketPageProps) {
         priority
       />
 
-      <header className="ticket-print-hide absolute top-0 left-0 right-0 flex w-full items-center justify-between px-8 pt-8">
-        <Image src={plnIcon} alt="PLN" width={72} height={72} priority />
+      <header className="flex w-full items-center justify-between px-8 pt-8">
+        <Image src={plnIcon} alt="PLN" width={200} height={71} priority />
         <Image
           src={plnMobileIcon}
           alt="PLN Mobile"
-          width={72}
-          height={72}
+          width={130}
+          height={130}
           priority
         />
       </header>
