@@ -1,7 +1,8 @@
-const { app, BrowserWindow, dialog, shell } = require("electron");
+const { app, BrowserWindow, dialog, ipcMain, shell } = require("electron");
 const fs = require("node:fs");
 const http = require("node:http");
 const net = require("node:net");
+const os = require("node:os");
 const path = require("node:path");
 
 const DEV_SERVER_URL =
@@ -12,6 +13,7 @@ const PROD_SERVER_PORT_START = 3000;
 let mainWindow = null;
 let productionServerUrl = null;
 let standaloneServerStarted = false;
+let appBaseUrl = null;
 
 const readJsonFile = (filePath) => {
   if (!fs.existsSync(filePath)) {
@@ -174,6 +176,8 @@ const createMainWindow = async () => {
     ? await ensureStandaloneServer()
     : DEV_SERVER_URL;
 
+  appBaseUrl = startUrl;
+
   if (!app.isPackaged) {
     await waitForServer(startUrl);
   }
@@ -184,6 +188,7 @@ const createMainWindow = async () => {
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
+      preload: path.join(__dirname, "preload.cjs"),
     },
   });
 
@@ -199,6 +204,179 @@ const createMainWindow = async () => {
     mainWindow.webContents.openDevTools({ mode: "detach" });
   }
 };
+
+const buildThermalPrintUrl = (params) => {
+  const base = appBaseUrl || DEV_SERVER_URL;
+  const search = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(params || {})) {
+    if (value !== undefined && value !== null) {
+      search.set(key, String(value));
+    }
+  }
+
+  return `${base}/thermal-print?${search.toString()}`;
+};
+
+const resolvePrinterDeviceName = async () => {
+  let printers = [];
+
+  const sourceWebContents = mainWindow?.webContents;
+
+  if (sourceWebContents) {
+    try {
+      printers = await sourceWebContents.getPrintersAsync();
+    } catch (error) {
+      console.error("[print] Failed to enumerate printers:", error);
+    }
+  }
+
+  console.log(
+    "[print] Available printers:",
+    printers.map((p) => `${p.name}${p.isDefault ? " (default)" : ""}`),
+  );
+
+  const requested = process.env.ELECTRON_PRINTER_NAME?.trim();
+
+  if (requested) {
+    const match = printers.find((p) => p.name === requested);
+
+    if (match || printers.length === 0) {
+      console.log(`[print] Using configured printer: ${requested}`);
+      return requested;
+    }
+
+    console.warn(
+      `[print] Configured printer "${requested}" not found. Falling back to default.`,
+    );
+  }
+
+  const def = printers.find((p) => p.isDefault);
+
+  if (def) {
+    console.log(`[print] Using default printer: ${def.name}`);
+    return def.name;
+  }
+
+  if (printers[0]) {
+    console.log(`[print] Using first available printer: ${printers[0].name}`);
+    return printers[0].name;
+  }
+
+  return undefined;
+};
+
+const renderTicketToPdf = (params) =>
+  new Promise((resolve, reject) => {
+    const targetUrl = buildThermalPrintUrl(params);
+    console.log("[print] Loading print page:", targetUrl);
+
+    const printWindow = new BrowserWindow({
+      show: false,
+      webPreferences: {
+        contextIsolation: true,
+        nodeIntegration: false,
+      },
+    });
+
+    let settled = false;
+
+    const cleanup = () => {
+      if (!printWindow.isDestroyed()) {
+        printWindow.destroy();
+      }
+    };
+
+    const fail = (error) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(error);
+    };
+
+    const succeed = (pdfBuffer) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve(pdfBuffer);
+    };
+
+    printWindow.webContents.once("did-finish-load", () => {
+      console.log("[print] Print page loaded, rendering PDF...");
+
+      // Give the renderer a moment to lay out fonts/styles.
+      setTimeout(async () => {
+        try {
+          const pdfBuffer = await printWindow.webContents.printToPDF({
+            printBackground: true,
+            margins: { marginType: "none" },
+            // POS58 = 58mm roll. Use the full roll width so content is not
+            // clipped; the printable area is ~48mm but the driver scales the
+            // 58mm page to fit. Height is generous; driver trims to content.
+            // 58mm = 2.283in.
+            pageSize: { width: 3 },
+          });
+          succeed(pdfBuffer);
+        } catch (error) {
+          fail(error);
+        }
+      }, 400);
+    });
+
+    printWindow.webContents.once(
+      "did-fail-load",
+      (_event, errorCode, errorDescription) => {
+        fail(
+          new Error(
+            `Failed to load print page (${errorCode}): ${errorDescription}`,
+          ),
+        );
+      },
+    );
+
+    printWindow.loadURL(targetUrl).catch(fail);
+  });
+
+const printTicket = async (params) => {
+  const deviceName = await resolvePrinterDeviceName();
+
+  const pdfBuffer = await renderTicketToPdf(params);
+
+  const tmpDir = path.join(os.tmpdir(), "pln-kiosk-tickets");
+  fs.mkdirSync(tmpDir, { recursive: true });
+  const pdfPath = path.join(tmpDir, `ticket-${Date.now()}.pdf`);
+  fs.writeFileSync(pdfPath, pdfBuffer);
+  console.log(`[print] PDF written: ${pdfPath} (${pdfBuffer.length} bytes)`);
+
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { print: printPdf } = require("pdf-to-printer");
+
+  const options = {};
+  if (deviceName) {
+    options.printer = deviceName;
+  }
+
+  await printPdf(pdfPath, options);
+  console.log(
+    `[print] Job sent to printer "${deviceName || "default"}" via pdf-to-printer.`,
+  );
+
+  // Best-effort cleanup of the temp file.
+  fs.unlink(pdfPath, () => {});
+
+  return { success: true };
+};
+
+ipcMain.handle("print-ticket", async (_event, params) => {
+  console.log("[print] IPC print-ticket received:", params);
+  try {
+    return await printTicket(params);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+
+    return { success: false, error: message };
+  }
+});
 
 app.whenReady().then(async () => {
   try {

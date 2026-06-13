@@ -102,8 +102,8 @@ export default function CetakTiket({ searchParams }: CetakTiketPageProps) {
     readParam(resolvedSearchParams.dateText) || "Kamis, 30 April 2026";
   const timeText = readParam(resolvedSearchParams.timeText) || "14.25";
 
-  const handlePrint = () => {
-    const params = new URLSearchParams({
+  const handlePrint = async () => {
+    const ticketData = {
       ticketNumber,
       nama,
       whatsapp,
@@ -111,7 +111,26 @@ export default function CetakTiket({ searchParams }: CetakTiketPageProps) {
       badge,
       dateText,
       timeText,
-    });
+    };
+
+    // In Electron, print silently to the configured thermal printer via the
+    // preload-exposed API instead of opening a browser print dialog.
+    if (window.kioskPrinter?.isElectron) {
+      try {
+        const result = await window.kioskPrinter.printTicket(ticketData);
+
+        if (!result.success) {
+          console.error("Thermal print failed:", result.error);
+        }
+      } catch (error) {
+        console.error("Thermal print error:", error);
+      }
+
+      setShowSuccess(true);
+      return;
+    }
+
+    const params = new URLSearchParams(ticketData);
     const printWindow = window.open(
       `/thermal-print?${params.toString()}`,
       "thermal-print",

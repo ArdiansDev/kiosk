@@ -43,6 +43,16 @@ export default function ThermalPrintPage({
   const timeText = readParam(resolvedSearchParams.timeText) || "14.25";
 
   useEffect(() => {
+    const isElectron = window.navigator.userAgent.includes("Electron");
+
+    if (isElectron) {
+      // In Electron the print is triggered from cetak-tiket via the
+      // preload-exposed kioskPrinter API (silent print to the configured
+      // thermal printer). This page is only rendered in a hidden window
+      // that the main process prints, so nothing to do here.
+      return;
+    }
+
     const printTimer = window.setTimeout(() => {
       window.print();
     }, 250);
@@ -60,9 +70,9 @@ export default function ThermalPrintPage({
   }, []);
 
   return (
-    <main className="min-h-screen bg-white px-3 py-4 text-black">
-      <div className="mx-auto" style={{ width: "72mm" }}>
-        <section className="border border-dashed border-black px-3 py-4 text-center">
+    <main className="min-h-screen bg-white px-0 py-2 text-black">
+      <div className="mx-auto" style={{ width: "54mm" }}>
+        <section className="border border-dashed border-black px-2 py-3 text-center">
           <div className="my-4 border-t border-dashed border-black" />
 
           <p className="text-[11px] uppercase tracking-[0.18em]">
@@ -102,22 +112,19 @@ export default function ThermalPrintPage({
       </div>
 
       <style jsx global>{`
+        @page {
+          size: 80mm auto;
+          margin: 0;
+        }
+
+        html,
+        body {
+          margin: 0;
+          padding: 0;
+          background: #fff;
+        }
+
         @media print {
-          @page {
-            size: 80mm auto;
-            margin: 4mm;
-          }
-
-          html,
-          body {
-            background: #fff;
-            badge-label {
-              background: #125d72;
-              color: #fff;
-              padding: 2px 6px;
-            }
-          }
-
           .screen-only {
             display: none !important;
           }
