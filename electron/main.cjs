@@ -320,11 +320,9 @@ const renderTicketToPdf = (params) =>
           const pdfBuffer = await printWindow.webContents.printToPDF({
             printBackground: true,
             margins: { marginType: "none" },
-            // POS58 = 58mm roll. Use the full roll width so content is not
-            // clipped; the printable area is ~48mm but the driver scales the
-            // 58mm page to fit. Height is generous; driver trims to content.
-            // 58mm = 2.283in.
-            pageSize: { width: 3 },
+            // pageSize unit is microns. 80mm × 297mm matches the @page CSS
+            // rule; the thermal driver auto-cuts to content length.
+            pageSize: { width: 80000, height: 297000 },
           });
           succeed(pdfBuffer);
         } catch (error) {

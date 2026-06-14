@@ -79,6 +79,9 @@
         "to": "standalone/public"
       }
     ],
+    "asarUnpack": [
+      "**/node_modules/pdf-to-printer/dist/**"
+    ],
     "win": {
       "target": "portable",
       "signAndEditExecutable": false
