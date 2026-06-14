@@ -317,14 +317,22 @@ const renderTicketToPdf = (params) =>
       // Give the renderer a moment to lay out fonts/styles.
       setTimeout(async () => {
         try {
+          // Measure the rendered content height so the receipt is cut to
+          // length instead of feeding a fixed page of blank paper.
+          const contentHeightPx = await printWindow.webContents.executeJavaScript(
+            "Math.ceil(document.documentElement.getBoundingClientRect().height)",
+          );
+
+          // printToPDF expects inches. POS58 = 58mm roll (2.283in); the page
+          // content is laid out for this width and centered. Both width and
+          // height are required — passing only one throws.
+          const widthIn = 3;
+          const heightIn = Math.max(contentHeightPx / 96, 1);
+
           const pdfBuffer = await printWindow.webContents.printToPDF({
             printBackground: true,
             margins: { marginType: "none" },
-            // POS58 = 58mm roll. Use the full roll width so content is not
-            // clipped; the printable area is ~48mm but the driver scales the
-            // 58mm page to fit. Height is generous; driver trims to content.
-            // 58mm = 2.283in.
-            pageSize: { width: 3 },
+            pageSize: { width: widthIn, height: heightIn },
           });
           succeed(pdfBuffer);
         } catch (error) {
