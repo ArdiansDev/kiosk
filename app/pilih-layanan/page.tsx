@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import bgDasar from "../assets/bg-dasar.png";
 import plnIcon from "../assets/pln-icon.png";
 import plnMobileIcon from "../assets/pln-mobile-icon.png";
@@ -64,21 +64,43 @@ const badgeStyle: Record<BadgeType, string> = {
   "BACK OFFICE": "bg-[#EFE62F] text-gray-800",
 };
 
-export default function PilihLayanan() {
+function PilihLayananContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedIndex, setSelectedIndex] = useState(10);
 
   const selectedService = services[selectedIndex];
 
+  const nama = searchParams.get("nama") ?? "";
+  const whatsapp = searchParams.get("whatsapp") ?? "";
+
+  const buildParams = (extra: Record<string, string>) => {
+    const params = new URLSearchParams(extra);
+    if (nama) params.set("nama", nama);
+    if (whatsapp) params.set("whatsapp", whatsapp);
+    return params;
+  };
+
+  const handleBack = () => {
+    const params = buildParams({});
+    const query = params.toString();
+    router.push(query ? `/buku-tamu?${query}` : "/buku-tamu");
+  };
+
   const handleContinue = () => {
-    const params = new URLSearchParams({
-      title: selectedService.title,
-      badge: selectedService.badge,
-      index: selectedIndex.toString(),
-    });
     if (selectedService.badge === "PLN MOBILE") {
-      router.push(`/tutorial?${selectedIndex.toString()}`);
+      const params = buildParams({
+        step: selectedIndex.toString(),
+        title: selectedService.title,
+        badge: selectedService.badge,
+      });
+      router.push(`/tutorial?${params.toString()}`);
     } else {
+      const params = buildParams({
+        title: selectedService.title,
+        badge: selectedService.badge,
+        index: selectedIndex.toString(),
+      });
       router.push(`/isi-data-pelanggan?${params.toString()}`);
     }
   };
@@ -165,7 +187,7 @@ export default function PilihLayanan() {
       {/* Bottom buttons */}
       <div className="absolute bottom-24 left-4 right-4 flex gap-3">
         <button
-          onClick={() => router.push("/buku-tamu")}
+          onClick={handleBack}
           className="flex-1 flex items-center justify-center gap-2 h-25.5 bg-white py-5 text-base font-bold tracking-widest text-gray-800 shadow-md active:scale-95 transition-transform cursor-pointer rounded-2xl border border-gray-200"
         >
           <Image src={chevronLeft} alt="Chevleft" width={13} height={13} />
@@ -185,5 +207,13 @@ export default function PilihLayanan() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function PilihLayanan() {
+  return (
+    <Suspense fallback={null}>
+      <PilihLayananContent />
+    </Suspense>
   );
 }

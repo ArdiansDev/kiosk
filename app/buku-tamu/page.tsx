@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState, useRef, useEffect } from "react";
 import Keyboard from "react-simple-keyboard";
 import "react-simple-keyboard/build/css/index.css";
 import bgDasar from "../assets/bg-dasar.png";
@@ -11,14 +11,29 @@ import plnMobileIcon from "../assets/pln-mobile-icon.png";
 import chevronLeft from "./../assets/chevron-left.svg";
 import chevronRight from "./../assets/chevron-right.svg";
 
-export default function BukuTamu() {
+function BukuTamuContent() {
   const router = useRouter();
-  const [nama, setNama] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
+  const searchParams = useSearchParams();
+  const [nama, setNama] = useState(searchParams.get("nama") ?? "");
+  const [whatsapp, setWhatsapp] = useState(searchParams.get("whatsapp") ?? "");
+  const [error, setError] = useState("");
   const [activeInput, setActiveInput] = useState<"nama" | "whatsapp" | null>(
     null,
   );
   const keyboardRef = useRef<any>(null);
+
+  const handleContinue = () => {
+    if (!nama.trim() || !whatsapp.trim()) {
+      setError("Nama dan No WhatsApp wajib diisi.");
+      return;
+    }
+
+    const params = new URLSearchParams({
+      nama: nama.trim(),
+      whatsapp: whatsapp.trim(),
+    });
+    router.push(`/pilih-layanan?${params.toString()}`);
+  };
 
   const handleInputChange = (input: string) => {
     if (activeInput === "nama") {
@@ -90,7 +105,10 @@ export default function BukuTamu() {
             <input
               type="text"
               value={nama}
-              onChange={(e) => setNama(e.target.value)}
+              onChange={(e) => {
+                setNama(e.target.value);
+                setError("");
+              }}
               onFocus={() => setActiveInput("nama")}
               className="flex-1 rounded-lg border h-24 border-gray-300 w-157.5 bg-white px-4 py-3 text-base text-gray-800 outline-none focus:border-[#2aaecf] focus:ring-2 focus:ring-[#2aaecf]/30"
             />
@@ -103,11 +121,18 @@ export default function BukuTamu() {
             <input
               type="tel"
               value={whatsapp}
-              onChange={(e) => setWhatsapp(e.target.value)}
+              onChange={(e) => {
+                setWhatsapp(e.target.value);
+                setError("");
+              }}
               onFocus={() => setActiveInput("whatsapp")}
               className="flex-1 rounded-lg border border-gray-300 h-24 bg-white px-4 py-3 text-base text-gray-800 outline-none focus:border-[#2aaecf] focus:ring-2 focus:ring-[#2aaecf]/30"
             />
           </div>
+
+          {error ? (
+            <p className="text-[24px] font-semibold text-[#9d2f2f]">{error}</p>
+          ) : null}
         </form>
       </main>
 
@@ -121,7 +146,7 @@ export default function BukuTamu() {
           <p className="text-[32px]">KEMBALI</p>
         </button>
         <button
-          onClick={() => router.push("/pilih-layanan")}
+          onClick={handleContinue}
           className="flex-1 flex items-center text-[32px] justify-center gap-2 h-25.5 bg-linear-to-r from-[#1a6e8e] to-[#2aaecf] py-5 text-base font-bold tracking-widest text-white shadow-md active:scale-95 transition-transform cursor-pointer rounded-2xl"
         >
           <p className="text-[32px]">LANJUT</p>
@@ -175,5 +200,13 @@ export default function BukuTamu() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function BukuTamu() {
+  return (
+    <Suspense fallback={null}>
+      <BukuTamuContent />
+    </Suspense>
   );
 }

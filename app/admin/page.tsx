@@ -216,6 +216,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                     <th className="px-6 py-4 font-semibold">Kategori</th>
                     <th className="px-6 py-4 font-semibold">Layanan</th>
                     <th className="px-6 py-4 font-semibold">Detail</th>
+                    <th className="px-6 py-4 font-semibold">Rating</th>
+
                     <th className="px-6 py-4 font-semibold">Feedback</th>
                   </tr>
                 </thead>
@@ -281,11 +283,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                           ) : null}
                         </td>
                         <td className="px-6 py-4">
+                          {entry.feedbackRating} / 5
+                        </td>
+
+                        <td className="px-6 py-4">
                           {entry.feedbackRating !== null ? (
                             <>
-                              <span className="inline-flex items-center gap-1 rounded-full bg-[#dff4fb] px-3 py-1 text-xs font-bold text-[#136285]">
-                                {entry.feedbackRating} / 5
-                              </span>
                               {entry.feedbackMessage ? (
                                 <div className="mt-1 text-xs text-[#6a8595]">
                                   {entry.feedbackMessage}

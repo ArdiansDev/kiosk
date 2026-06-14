@@ -29,23 +29,77 @@ const parseStep = (searchParams: URLSearchParams) => {
 
 function TutorialContent() {
   const [selectedStep, setSelectedStep] = useState(1);
+  const [isFinishing, setIsFinishing] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const step = parseStep(searchParams);
   const safeStep = Math.min(Math.max(step, 0), tutorialServices.length - 1);
   const selectedService = tutorialServices[safeStep];
+
+  const nama = searchParams.get("nama") ?? "";
+  const whatsapp = searchParams.get("whatsapp") ?? "";
+  const serviceTitle = searchParams.get("title") ?? selectedService.title ?? "";
+  const badge = searchParams.get("badge") ?? "PLN MOBILE";
+
+  const buildContactQuery = () => {
+    const params = new URLSearchParams();
+    if (nama) params.set("nama", nama);
+    if (whatsapp) params.set("whatsapp", whatsapp);
+    return params.toString();
+  };
+
   const handleBack = () => {
     if (selectedStep > 1) {
       setSelectedStep(selectedStep - 1);
     } else {
-      router.push("/pilih-layanan");
+      const query = buildContactQuery();
+      router.push(query ? `/pilih-layanan?${query}` : "/pilih-layanan");
     }
   };
+
+  const finishTutorial = async () => {
+    if (isFinishing) {
+      return;
+    }
+    setIsFinishing(true);
+
+    let ticketQuery = "";
+
+    try {
+      // Rekam kunjungan layanan PLN Mobile agar muncul di admin panel.
+      if (nama.trim() && whatsapp.trim() && serviceTitle.trim()) {
+        const response = await fetch("/api/queue", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            serviceTitle,
+            badge,
+            name: nama,
+            whatsapp,
+            detail: serviceTitle,
+          }),
+        });
+
+        const payload = (await response.json()) as {
+          entry?: { ticketNumber: string };
+        };
+
+        if (response.ok && payload.entry?.ticketNumber) {
+          ticketQuery = `?ticketNumber=${encodeURIComponent(payload.entry.ticketNumber)}`;
+        }
+      }
+    } catch (error) {
+      console.error("Gagal menyimpan data antrean tutorial", error);
+    } finally {
+      router.push(`/feedback${ticketQuery}`);
+    }
+  };
+
   const handleNext = () => {
     if (selectedStep < selectedService.children.length) {
       setSelectedStep(selectedStep + 1);
     } else {
-      router.push("/pilih-layanan");
+      void finishTutorial();
     }
   };
   return (
@@ -138,9 +192,10 @@ function TutorialContent() {
         </button>
         <button
           onClick={() => handleNext()}
-          className="flex-1 flex items-center text-[32px] justify-center gap-2 h-25.5 bg-linear-to-r from-[#1a6e8e] to-[#2aaecf] py-5 text-base font-bold tracking-widest text-white shadow-md active:scale-95 transition-transform cursor-pointer rounded-2xl"
+          disabled={isFinishing}
+          className="flex-1 flex items-center text-[32px] justify-center gap-2 h-25.5 bg-linear-to-r from-[#1a6e8e] to-[#2aaecf] py-5 text-base font-bold tracking-widest text-white shadow-md active:scale-95 transition-transform cursor-pointer rounded-2xl disabled:cursor-not-allowed disabled:opacity-60"
         >
-          <p className="text-[32px]">LANJUT</p>
+          <p className="text-[32px]">{isFinishing ? "MENYIMPAN..." : "LANJUT"}</p>
           <Image
             src={chevronRight}
             alt="Chevron Right"

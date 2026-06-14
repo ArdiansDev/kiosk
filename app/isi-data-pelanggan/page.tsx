@@ -41,6 +41,8 @@ type IsiDataPelangganPageProps = {
     title?: string | string[];
     badge?: string | string[];
     index?: string | string[];
+    nama?: string | string[];
+    whatsapp?: string | string[];
   }>;
 };
 
@@ -53,8 +55,8 @@ export default function IsiDataPelanggan({
   const router = useRouter();
   const resolvedSearchParams = use(searchParams);
   const [form, setForm] = useState<FormState>({
-    nama: "",
-    whatsapp: "",
+    nama: readParam(resolvedSearchParams.nama) || "",
+    whatsapp: readParam(resolvedSearchParams.whatsapp) || "",
     ktp: "",
     pelangganId: "",
     alamat: "",
@@ -317,7 +319,14 @@ export default function IsiDataPelanggan({
       </div>
       <div className="absolute bottom-24 left-4 right-4 flex gap-3">
         <button
-          onClick={() => router.push("/pilih-layanan")}
+          onClick={() => {
+            const params = new URLSearchParams();
+            if (form.nama.trim()) params.set("nama", form.nama.trim());
+            if (form.whatsapp.trim())
+              params.set("whatsapp", form.whatsapp.trim());
+            const query = params.toString();
+            router.push(query ? `/pilih-layanan?${query}` : "/pilih-layanan");
+          }}
           className="flex-1 flex items-center justify-center gap-2 h-25.5 bg-white py-5 text-base font-bold tracking-widest text-gray-800 shadow-md active:scale-95 transition-transform cursor-pointer rounded-2xl border border-gray-200"
         >
           <Image src={chevronLeft} alt="Chevleft" width={13} height={13} />
