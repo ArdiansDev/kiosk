@@ -150,19 +150,29 @@ const ensureStandaloneServer = async () => {
   process.env.NODE_ENV = "production";
   process.env.HOSTNAME = PROD_SERVER_HOST;
   process.env.PORT = String(serverPort);
-  process.env.DATABASE_URL = process.env.DATABASE_URL || getDatabaseUrl();
+
+  // Always use the absolute writable DB path in userData. The Next standalone
+  // server bundles the project .env which sets a RELATIVE DATABASE_URL
+  // ("file:./prisma/dev.db"); that path breaks when the app folder is moved,
+  // causing 500 errors on DB routes like /admin. Force the absolute path and
+  // override any value the bundled .env may set.
+  const absoluteDatabaseUrl = getDatabaseUrl();
+  process.env.DATABASE_URL = absoluteDatabaseUrl;
+  // Guard: if Next's dotenv loader overrides it, restore the absolute path.
+  process.env.__KIOSK_DATABASE_URL = absoluteDatabaseUrl;
 
   if (!standaloneServerStarted) {
     standaloneServerStarted = true;
 
-    const previousCwd = process.cwd();
+    // The Next.js standalone server resolves its manifests (e.g.
+    // .next/routes-manifest.json) relative to process.cwd() *lazily*, on the
+    // first request — not during require(). If we restore the original cwd
+    // after require(), Next later joins the launch directory with absolute
+    // paths and produces a corrupted path, throwing ENOENT and returning 500
+    // on API routes like /api/queue. Set the cwd to the standalone directory
+    // and keep it there for the lifetime of the process.
     process.chdir(standaloneDir);
-
-    try {
-      require(serverEntry);
-    } finally {
-      process.chdir(previousCwd);
-    }
+    require(serverEntry);
   }
 
   productionServerUrl = `http://${PROD_SERVER_HOST}:${serverPort}`;

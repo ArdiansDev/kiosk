@@ -80,12 +80,11 @@
       }
     ],
     "win": {
-      "target": "nsis",
+      "target": "portable",
       "signAndEditExecutable": false
     },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+    "portable": {
+      "artifactName": "PLN-Kiosk-Portable-${version}.exe"
     }
   }
 }
