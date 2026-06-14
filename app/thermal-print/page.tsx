@@ -43,15 +43,15 @@ export default function ThermalPrintPage({
   const timeText = readParam(resolvedSearchParams.timeText) || "14.25";
 
   useEffect(() => {
-    // const isElectron = window.navigator.userAgent.includes("Electron");
+    const isElectron = window.navigator.userAgent.includes("Electron");
 
-    // if (isElectron) {
-    //   // In Electron the print is triggered from cetak-tiket via the
-    //   // preload-exposed kioskPrinter API (silent print to the configured
-    //   // thermal printer). This page is only rendered in a hidden window
-    //   // that the main process prints, so nothing to do here.
-    //   return;
-    // }
+    if (isElectron) {
+      // In Electron the print is triggered from cetak-tiket via the
+      // preload-exposed kioskPrinter API (silent print to the configured
+      // thermal printer). This page is only rendered in a hidden window
+      // that the main process prints, so nothing to do here.
+      return;
+    }
 
     const printTimer = window.setTimeout(() => {
       window.print();
