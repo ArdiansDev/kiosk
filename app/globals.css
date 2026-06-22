@@ -16,8 +16,8 @@ body {
 
 /* Virtual keyboard sizing — tweak these values to resize */
 .kiosk-keyboard {
-  --key-height: 100px; /* taller keys = bigger keyboard */
-  --key-font: 36px; /* size of the letters on the keys */
+  --key-height: 10vh; /* taller keys = bigger keyboard; ~half screen across 4 rows */
+  --key-font: 4vh; /* size of the letters on the keys */
   --kb-max-width: 100%; /* overall keyboard width; set e.g. 900px to constrain */
   position: fixed;
   bottom: 0;
