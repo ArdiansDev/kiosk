@@ -14,6 +14,30 @@ body {
   font-family: var(--font-montserrat), Arial, sans-serif;
 }
 
+/* Virtual keyboard sizing — tweak these values to resize */
+.kiosk-keyboard {
+  --key-height: 100px; /* taller keys = bigger keyboard */
+  --key-font: 36px; /* size of the letters on the keys */
+  --kb-max-width: 100%; /* overall keyboard width; set e.g. 900px to constrain */
+  position: fixed;
+  bottom: 0;
+}
+
+.kiosk-keyboard .simple-keyboard {
+  max-width: var(--kb-max-width);
+  margin: 0 auto;
+  padding: 12px;
+  background: transparent;
+}
+
+/* Higher specificity + !important to beat the library's
+   .hg-theme-default .hg-button { height: 40px } rule */
+.kiosk-keyboard .hg-theme-default .hg-button {
+  height: var(--key-height) !important;
+  font-size: var(--key-font) !important;
+  font-weight: 500;
+}
+
 @media print {
   @page {
     size: 80mm auto;

@@ -286,7 +286,7 @@ function FeedbackContent() {
 
       {/* Virtual Keyboard */}
       {activeInput && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white shadow-2xl border-t-2 border-gray-300">
+        <div className="kiosk-keyboard fixed bottom-0 left-0 right-0 z-50 bg-white shadow-2xl border-t-2 border-gray-300">
           <Keyboard
             keyboardRef={(r: any) => (keyboardRef.current = r)}
             layoutName="default"
