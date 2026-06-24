@@ -17,7 +17,7 @@ body {
 /* Virtual keyboard sizing — tweak these values to resize */
 .kiosk-keyboard {
   --key-height: 10vh; /* taller keys = bigger keyboard; ~half screen across 4 rows */
-  --key-font: 4vh; /* size of the letters on the keys */
+  --key-font: 3vh; /* size of the letters on the keys */
   --kb-max-width: 100%; /* overall keyboard width; set e.g. 900px to constrain */
   position: fixed;
   bottom: 0;
@@ -36,6 +36,33 @@ body {
   height: var(--key-height) !important;
   font-size: var(--key-font) !important;
   font-weight: 500;
+  /* Every standard key gets the same base width unit (flex: 1).
+     Special keys below override this with bigger units. */
+  flex: 1 1 0 !important;
+  /* The library hard-caps some keys (e.g. @ -> max-width:60px, .com -> 82px),
+     which squeezes them. Clear those caps so flex controls the width. */
+  width: auto !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+
+/* Space bar soaks up the leftover room on the bottom row
+   so the other keys stay normal-sized instead of all stretching. */
+.kiosk-keyboard .hg-theme-default .hg-button[data-skbtn="{space}"] {
+  flex: 6 1 0 !important;
+}
+
+/* Wider function keys, phone-style */
+.kiosk-keyboard .hg-theme-default .hg-button[data-skbtn="{enter}"],
+.kiosk-keyboard .hg-theme-default .hg-button[data-skbtn="{numbers}"],
+.kiosk-keyboard .hg-theme-default .hg-button[data-skbtn="{symbols}"],
+.kiosk-keyboard .hg-theme-default .hg-button[data-skbtn="{abc}"] {
+  flex: 2 1 0 !important;
+}
+
+.kiosk-keyboard .hg-theme-default .hg-button[data-skbtn="{shift}"],
+.kiosk-keyboard .hg-theme-default .hg-button[data-skbtn="{bksp}"] {
+  flex: 1.5 1 0 !important;
 }
 
 @media print {

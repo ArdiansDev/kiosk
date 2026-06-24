@@ -38,7 +38,7 @@ function FeedbackContent() {
   const [showMore, setShowMore] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeInput, setActiveInput] = useState<"message" | null>(null);
-  const [shiftActive, setShiftActive] = useState(false);
+  const [layoutName, setLayoutName] = useState("default");
   const keyboardRef = useRef<any>(null);
 
   const handleInputChange = (input: string) => {
@@ -46,12 +46,26 @@ function FeedbackContent() {
   };
 
   const handleKeyPress = (button: string) => {
-    if (button === "{shift}" || button === "{lock}") {
-      setShiftActive((current) => !current);
-    }
-
-    if (button === "{enter}") {
-      setActiveInput(null);
+    switch (button) {
+      case "{shift}":
+      case "{lock}":
+        setLayoutName((current) => (current === "shift" ? "default" : "shift"));
+        return;
+      case "{numbers}":
+        setLayoutName("numbers");
+        return;
+      case "{symbols}":
+        setLayoutName("symbols");
+        return;
+      case "{abc}":
+        setLayoutName("default");
+        return;
+      case "{enter}":
+        setActiveInput(null);
+        return;
+      default:
+        // iOS-style one-shot shift: drop back to lowercase after a letter
+        setLayoutName((current) => (current === "shift" ? "default" : current));
     }
   };
 
@@ -59,6 +73,20 @@ function FeedbackContent() {
     if (keyboardRef.current && activeInput) {
       keyboardRef.current.setInput(message);
     }
+  }, [activeInput]);
+
+  // Close the keyboard when tapping anywhere outside it or the inputs.
+  useEffect(() => {
+    if (!activeInput) return;
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (target.closest(".kiosk-keyboard") || target.closest("input, textarea")) {
+        return;
+      }
+      setActiveInput(null);
+    };
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
   }, [activeInput]);
 
   const handleSubmit = async () => {
@@ -179,7 +207,10 @@ function FeedbackContent() {
           <textarea
             value={message}
             onChange={(event) => setMessage(event.target.value)}
-            onFocus={() => setActiveInput("message")}
+            onFocus={() => {
+              setActiveInput("message");
+              setLayoutName("default");
+            }}
             placeholder="Tulis masukan anda disini..."
             rows={4}
             className="mt-3 w-full resize-none rounded-2xl border border-[#d9e1e7] bg-white px-5 py-4 text-base text-[#222] outline-none placeholder:text-[#b6b6b6] focus:border-[#2aaecf] focus:ring-2 focus:ring-[#2aaecf]/30"
@@ -291,44 +322,49 @@ function FeedbackContent() {
 
       {/* Virtual Keyboard */}
       {activeInput && (
-        <div className="kiosk-keyboard fixed bottom-0 left-0 right-0 z-50 bg-white shadow-2xl border-t-2 border-gray-300">
+        <div className="kiosk-keyboard fixed bottom-0 left-0 right-0 z-50 shadow-2xl">
           <Keyboard
             keyboardRef={(r: any) => (keyboardRef.current = r)}
-            layoutName={shiftActive ? "shift" : "default"}
+            layoutName={layoutName}
             onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             inputName={activeInput}
             layout={{
               default: [
-                "` 1 2 3 4 5 6 7 8 9 0 - = {bksp}",
-                "{tab} q w e r t y u i o p [ ] \\",
-                "{lock} a s d f g h j k l ; ' {enter}",
-                "{shift} z x c v b n m , . / {shift}",
-                ".com @ {space}",
+                "q w e r t y u i o p",
+                "a s d f g h j k l",
+                "{shift} z x c v b n m {bksp}",
+                "{numbers} {space} . {enter}",
               ],
               shift: [
-                "~ ! @ # $ % ^ & * ( ) _ + {bksp}",
-                "{tab} Q W E R T Y U I O P { } |",
-                '{lock} A S D F G H J K L : " {enter}',
-                "{shift} Z X C V B N M < > ? {shift}",
-                ".com @ {space}",
+                "Q W E R T Y U I O P",
+                "A S D F G H J K L",
+                "{shift} Z X C V B N M {bksp}",
+                "{numbers} {space} . {enter}",
+              ],
+              numbers: [
+                "1 2 3 4 5 6 7 8 9 0",
+                '- / : ; ( ) $ & @ "',
+                "{symbols} . , ? ! ' {bksp}",
+                "{abc} {space} {enter}",
+              ],
+              symbols: [
+                "[ ] { } # % ^ * + =",
+                "_ \\ | ~ < > € £ ¥ •",
+                "{numbers} . , ? ! ' {bksp}",
+                "{abc} {space} {enter}",
               ],
             }}
             display={{
-              "{enter}": "< enter",
-              "{shift}": "shift",
-              "{bksp}": "backspace",
-              "{lock}": "caps",
-              "{tab}": "tab",
-              "{space}": " ",
+              "{enter}": "→",
+              "{shift}": "⇧",
+              "{bksp}": "⌫",
+              "{numbers}": "123",
+              "{symbols}": "#+=",
+              "{abc}": "ABC",
+              "{space}": "space",
             }}
             theme="hg-theme-default hg-layout-default"
-            buttonTheme={[
-              {
-                class: "hg-button-lg",
-                buttons: "{enter} {shift} {bksp} {tab} {lock}",
-              },
-            ]}
           />
         </div>
       )}

@@ -65,7 +65,7 @@ export default function IsiDataPelanggan({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [activeInput, setActiveInput] = useState<keyof FormState | null>(null);
-  const [shiftActive, setShiftActive] = useState(false);
+  const [layoutName, setLayoutName] = useState("default");
   const keyboardRef = useRef<any>(null);
 
   const title = readParam(resolvedSearchParams.title) || fallbackService.title;
@@ -91,13 +91,32 @@ export default function IsiDataPelanggan({
     }
   };
 
-  const handleKeyPress = (button: string) => {
-    if (button === "{shift}" || button === "{lock}") {
-      setShiftActive((current) => !current);
-    }
+  const focusInput = (field: keyof FormState) => {
+    setActiveInput(field);
+    setLayoutName("default");
+  };
 
-    if (button === "{enter}") {
-      setActiveInput(null);
+  const handleKeyPress = (button: string) => {
+    switch (button) {
+      case "{shift}":
+      case "{lock}":
+        setLayoutName((current) => (current === "shift" ? "default" : "shift"));
+        return;
+      case "{numbers}":
+        setLayoutName("numbers");
+        return;
+      case "{symbols}":
+        setLayoutName("symbols");
+        return;
+      case "{abc}":
+        setLayoutName("default");
+        return;
+      case "{enter}":
+        setActiveInput(null);
+        return;
+      default:
+        // iOS-style one-shot shift: drop back to lowercase after a letter
+        setLayoutName((current) => (current === "shift" ? "default" : current));
     }
   };
 
@@ -105,6 +124,20 @@ export default function IsiDataPelanggan({
     if (keyboardRef.current && activeInput) {
       keyboardRef.current.setInput(form[activeInput]);
     }
+  }, [activeInput]);
+
+  // Close the keyboard when tapping anywhere outside it or the inputs.
+  useEffect(() => {
+    if (!activeInput) return;
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (target.closest(".kiosk-keyboard") || target.closest("input, textarea")) {
+        return;
+      }
+      setActiveInput(null);
+    };
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
   }, [activeInput]);
 
   const handleContinue = async () => {
@@ -243,7 +276,7 @@ export default function IsiDataPelanggan({
                 type="text"
                 value={form.nama}
                 onChange={(event) => updateField("nama", event.target.value)}
-                onFocus={() => setActiveInput("nama")}
+                onFocus={() => focusInput("nama")}
                 className="h-18 w-full rounded-md border border-[#c6d0d8] bg-white px-4 text-[20px] text-[#1b1b1b] outline-none"
               />
             </div>
@@ -258,7 +291,7 @@ export default function IsiDataPelanggan({
                 onChange={(event) =>
                   updateField("whatsapp", event.target.value)
                 }
-                onFocus={() => setActiveInput("whatsapp")}
+                onFocus={() => focusInput("whatsapp")}
                 className="h-18 w-full rounded-md border border-[#c6d0d8] bg-white px-4 text-[20px] text-[#1b1b1b] outline-none"
               />
             </div>
@@ -271,7 +304,7 @@ export default function IsiDataPelanggan({
                 type="text"
                 value={form.ktp}
                 onChange={(event) => updateField("ktp", event.target.value)}
-                onFocus={() => setActiveInput("ktp")}
+                onFocus={() => focusInput("ktp")}
                 className="h-18 w-full rounded-md border border-[#c6d0d8] bg-white px-4 text-[20px] text-[#1b1b1b] outline-none"
               />
             </div>
@@ -286,7 +319,7 @@ export default function IsiDataPelanggan({
                 onChange={(event) =>
                   updateField("pelangganId", event.target.value)
                 }
-                onFocus={() => setActiveInput("pelangganId")}
+                onFocus={() => focusInput("pelangganId")}
                 className="h-18 w-full rounded-md border border-[#c6d0d8] bg-white px-4 text-[20px] text-[#1b1b1b] outline-none"
               />
             </div>
@@ -298,7 +331,7 @@ export default function IsiDataPelanggan({
               <textarea
                 value={form.alamat}
                 onChange={(event) => updateField("alamat", event.target.value)}
-                onFocus={() => setActiveInput("alamat")}
+                onFocus={() => focusInput("alamat")}
                 className="min-h-29 w-full resize-none rounded-md border border-[#c6d0d8] bg-white px-4 py-3 text-[20px] text-[#1b1b1b] outline-none"
               />
             </div>
@@ -310,7 +343,7 @@ export default function IsiDataPelanggan({
               <textarea
                 value={form.detail}
                 onChange={(event) => updateField("detail", event.target.value)}
-                onFocus={() => setActiveInput("detail")}
+                onFocus={() => focusInput("detail")}
                 className="min-h-29 w-full resize-none rounded-md border border-[#c6d0d8] bg-white px-4 py-3 text-[20px] text-[#1b1b1b] outline-none"
               />
             </div>
@@ -353,7 +386,7 @@ export default function IsiDataPelanggan({
 
       {/* Virtual Keyboard */}
       {activeInput && (
-        <div className="kiosk-keyboard fixed bottom-0 left-0 right-0 z-50 bg-white shadow-2xl border-t-2 border-gray-300">
+        <div className="kiosk-keyboard fixed bottom-0 left-0 right-0 z-50 shadow-2xl">
           <Keyboard
             keyboardRef={(r: any) => (keyboardRef.current = r)}
             layoutName={
@@ -361,51 +394,53 @@ export default function IsiDataPelanggan({
               activeInput === "ktp" ||
               activeInput === "pelangganId"
                 ? "numeric"
-                : shiftActive
-                  ? "shift"
-                  : "default"
+                : layoutName
             }
             onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             inputName={activeInput}
             layout={{
               default: [
-                "` 1 2 3 4 5 6 7 8 9 0 - = {bksp}",
-                "{tab} q w e r t y u i o p [ ] \\",
-                "{lock} a s d f g h j k l ; ' {enter}",
-                "{shift} z x c v b n m , . / {shift}",
-                ".com @ {space}",
+                "q w e r t y u i o p",
+                "a s d f g h j k l",
+                "{shift} z x c v b n m {bksp}",
+                "{numbers} {space} . {enter}",
               ],
               shift: [
-                "~ ! @ # $ % ^ & * ( ) _ + {bksp}",
-                "{tab} Q W E R T Y U I O P { } |",
-                '{lock} A S D F G H J K L : " {enter}',
-                "{shift} Z X C V B N M < > ? {shift}",
-                ".com @ {space}",
+                "Q W E R T Y U I O P",
+                "A S D F G H J K L",
+                "{shift} Z X C V B N M {bksp}",
+                "{numbers} {space} . {enter}",
+              ],
+              numbers: [
+                "1 2 3 4 5 6 7 8 9 0",
+                '- / : ; ( ) $ & @ "',
+                "{symbols} . , ? ! ' {bksp}",
+                "{abc} {space} {enter}",
+              ],
+              symbols: [
+                "[ ] { } # % ^ * + =",
+                "_ \\ | ~ < > € £ ¥ •",
+                "{numbers} . , ? ! ' {bksp}",
+                "{abc} {space} {enter}",
               ],
               numeric: [
                 "1 2 3",
                 "4 5 6",
                 "7 8 9",
-                "0 {bksp}",
-                "{space} {enter}",
+                "{bksp} 0 {enter}",
               ],
             }}
             display={{
-              "{enter}": "< enter",
-              "{shift}": "shift",
-              "{bksp}": "backspace",
-              "{lock}": "caps",
-              "{tab}": "tab",
-              "{space}": " ",
+              "{enter}": "→",
+              "{shift}": "⇧",
+              "{bksp}": "⌫",
+              "{numbers}": "123",
+              "{symbols}": "#+=",
+              "{abc}": "ABC",
+              "{space}": "space",
             }}
             theme="hg-theme-default hg-layout-default"
-            buttonTheme={[
-              {
-                class: "hg-button-lg",
-                buttons: "{enter} {shift} {bksp} {tab} {lock}",
-              },
-            ]}
           />
         </div>
       )}

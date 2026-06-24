@@ -20,7 +20,8 @@ function BukuTamuContent() {
   const [activeInput, setActiveInput] = useState<"nama" | "whatsapp" | null>(
     null,
   );
-  const [shiftActive, setShiftActive] = useState(false);
+  const [layoutName, setLayoutName] = useState("default");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const keyboardRef = useRef<any>(null);
 
   const handleContinue = () => {
@@ -45,12 +46,27 @@ function BukuTamuContent() {
   };
 
   const handleKeyPress = (button: string) => {
-    if (button === "{shift}" || button === "{lock}") {
-      setShiftActive((current) => !current);
-    }
+    switch (button) {
+      case "{shift}":
+      case "{lock}":
+        setLayoutName((current) => (current === "shift" ? "default" : "shift"));
+        return;
+      case "{numbers}":
+        setLayoutName("numbers");
+        return;
+      case "{symbols}":
+        setLayoutName("symbols");
+        return;
+      case "{abc}":
+        setLayoutName("default");
+        return;
 
-    if (button === "{enter}") {
-      setActiveInput(null);
+      case "{enter}":
+        setActiveInput(null);
+        return;
+      default:
+        // iOS-style one-shot shift: drop back to lowercase after a letter
+        setLayoutName((current) => (current === "shift" ? "default" : current));
     }
   };
 
@@ -64,6 +80,20 @@ function BukuTamuContent() {
             : "";
       keyboardRef.current.setInput(currentValue);
     }
+  }, [activeInput]);
+
+  // Close the keyboard when tapping anywhere outside it or the inputs.
+  useEffect(() => {
+    if (!activeInput) return;
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (target.closest(".kiosk-keyboard") || target.closest("input, textarea")) {
+        return;
+      }
+      setActiveInput(null);
+    };
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => document.removeEventListener("mousedown", handlePointerDown);
   }, [activeInput]);
 
   return (
@@ -114,7 +144,10 @@ function BukuTamuContent() {
                 setNama(e.target.value);
                 setError("");
               }}
-              onFocus={() => setActiveInput("nama")}
+              onFocus={() => {
+                setActiveInput("nama");
+                setLayoutName("default");
+              }}
               className="flex-1 rounded-lg border h-24 border-gray-300 w-157.5 bg-white px-4 py-3 text-base text-gray-800 outline-none focus:border-[#2aaecf] focus:ring-2 focus:ring-[#2aaecf]/30"
             />
           </div>
@@ -130,7 +163,10 @@ function BukuTamuContent() {
                 setWhatsapp(e.target.value);
                 setError("");
               }}
-              onFocus={() => setActiveInput("whatsapp")}
+              onFocus={() => {
+                setActiveInput("whatsapp");
+                setLayoutName("default");
+              }}
               className="flex-1 rounded-lg border border-gray-300 h-24 bg-white px-4 py-3 text-base text-gray-800 outline-none focus:border-[#2aaecf] focus:ring-2 focus:ring-[#2aaecf]/30"
             />
           </div>
@@ -166,57 +202,50 @@ function BukuTamuContent() {
 
       {/* Virtual Keyboard */}
       {activeInput && (
-        <div className="kiosk-keyboard bottom-0 left-0 right-0 z-50 bg-white shadow-2xl border-t-2 border-gray-300">
+        <div className="kiosk-keyboard bottom-0 left-0 right-0 z-50 shadow-2xl">
           <Keyboard
             keyboardRef={(r: any) => (keyboardRef.current = r)}
-            layoutName={
-              activeInput === "whatsapp"
-                ? "numeric"
-                : shiftActive
-                  ? "shift"
-                  : "default"
-            }
+            layoutName={activeInput === "whatsapp" ? "numeric" : layoutName}
             onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             inputName={activeInput}
             layout={{
               default: [
-                "` 1 2 3 4 5 6 7 8 9 0 - = {bksp}",
-                "{tab} q w e r t y u i o p [ ] \\",
-                "{lock} a s d f g h j k l ; ' {enter}",
-                "{shift} z x c v b n m , . / {shift}",
-                ".com @ {space}",
+                "q w e r t y u i o p",
+                "a s d f g h j k l",
+                "{shift} z x c v b n m {bksp}",
+                "{numbers} {space} . {enter}",
               ],
               shift: [
-                "~ ! @ # $ % ^ & * ( ) _ + {bksp}",
-                "{tab} Q W E R T Y U I O P { } |",
-                '{lock} A S D F G H J K L : " {enter}',
-                "{shift} Z X C V B N M < > ? {shift}",
-                ".com @ {space}",
+                "Q W E R T Y U I O P",
+                "A S D F G H J K L",
+                "{shift} Z X C V B N M {bksp}",
+                "{numbers} {space} . {enter}",
               ],
-              numeric: [
-                "1 2 3",
-                "4 5 6",
-                "7 8 9",
-                "0 {bksp}",
-                "{space} {enter}",
+              numbers: [
+                "1 2 3 4 5 6 7 8 9 0",
+                '- / : ; ( ) $ & @ "',
+                "{symbols} . , ? ! ' {bksp}",
+                "{abc} {space} {enter}",
               ],
+              symbols: [
+                "[ ] { } # % ^ * + =",
+                "_ \\ | ~ < > € £ ¥ •",
+                "{numbers} . , ? ! ' {bksp}",
+                "{abc} {space} {enter}",
+              ],
+              numeric: ["1 2 3", "4 5 6", "7 8 9", "{bksp} 0 {enter}"],
             }}
             display={{
-              "{enter}": "< enter",
-              "{shift}": "shift",
-              "{bksp}": "backspace",
-              "{lock}": "caps",
-              "{tab}": "tab",
-              "{space}": " ",
+              "{enter}": "→",
+              "{shift}": "⇧",
+              "{bksp}": "⌫",
+              "{numbers}": "123",
+              "{symbols}": "#+=",
+              "{abc}": "ABC",
+              "{space}": "space",
             }}
             theme="hg-theme-default hg-layout-default"
-            buttonTheme={[
-              {
-                class: "hg-button-lg",
-                buttons: "{enter} {shift} {bksp} {tab} {lock}",
-              },
-            ]}
           />
         </div>
       )}
