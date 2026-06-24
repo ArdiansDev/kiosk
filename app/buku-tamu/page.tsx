@@ -20,6 +20,7 @@ function BukuTamuContent() {
   const [activeInput, setActiveInput] = useState<"nama" | "whatsapp" | null>(
     null,
   );
+  const [shiftActive, setShiftActive] = useState(false);
   const keyboardRef = useRef<any>(null);
 
   const handleContinue = () => {
@@ -44,6 +45,10 @@ function BukuTamuContent() {
   };
 
   const handleKeyPress = (button: string) => {
+    if (button === "{shift}" || button === "{lock}") {
+      setShiftActive((current) => !current);
+    }
+
     if (button === "{enter}") {
       setActiveInput(null);
     }
@@ -164,16 +169,30 @@ function BukuTamuContent() {
         <div className="kiosk-keyboard bottom-0 left-0 right-0 z-50 bg-white shadow-2xl border-t-2 border-gray-300">
           <Keyboard
             keyboardRef={(r: any) => (keyboardRef.current = r)}
-            layoutName={activeInput === "whatsapp" ? "numeric" : "default"}
+            layoutName={
+              activeInput === "whatsapp"
+                ? "numeric"
+                : shiftActive
+                  ? "shift"
+                  : "default"
+            }
             onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             inputName={activeInput}
             layout={{
               default: [
-                "q w e r t y u i o p",
-                "a s d f g h j k l",
-                "{shift} z x c v b n m {bksp}",
-                "{space} {enter}",
+                "` 1 2 3 4 5 6 7 8 9 0 - = {bksp}",
+                "{tab} q w e r t y u i o p [ ] \\",
+                "{lock} a s d f g h j k l ; ' {enter}",
+                "{shift} z x c v b n m , . / {shift}",
+                ".com @ {space}",
+              ],
+              shift: [
+                "~ ! @ # $ % ^ & * ( ) _ + {bksp}",
+                "{tab} Q W E R T Y U I O P { } |",
+                '{lock} A S D F G H J K L : " {enter}',
+                "{shift} Z X C V B N M < > ? {shift}",
+                ".com @ {space}",
               ],
               numeric: [
                 "1 2 3",
@@ -184,16 +203,18 @@ function BukuTamuContent() {
               ],
             }}
             display={{
-              "{enter}": "↵",
-              "{shift}": "⇧",
-              "{bksp}": "⌫",
-              "{space}": "Space",
+              "{enter}": "< enter",
+              "{shift}": "shift",
+              "{bksp}": "backspace",
+              "{lock}": "caps",
+              "{tab}": "tab",
+              "{space}": " ",
             }}
             theme="hg-theme-default hg-layout-default"
             buttonTheme={[
               {
                 class: "hg-button-lg",
-                buttons: "{enter} {shift} {bksp} {space}",
+                buttons: "{enter} {shift} {bksp} {tab} {lock}",
               },
             ]}
           />

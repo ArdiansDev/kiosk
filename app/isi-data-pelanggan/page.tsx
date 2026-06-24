@@ -65,6 +65,7 @@ export default function IsiDataPelanggan({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [activeInput, setActiveInput] = useState<keyof FormState | null>(null);
+  const [shiftActive, setShiftActive] = useState(false);
   const keyboardRef = useRef<any>(null);
 
   const title = readParam(resolvedSearchParams.title) || fallbackService.title;
@@ -91,6 +92,10 @@ export default function IsiDataPelanggan({
   };
 
   const handleKeyPress = (button: string) => {
+    if (button === "{shift}" || button === "{lock}") {
+      setShiftActive((current) => !current);
+    }
+
     if (button === "{enter}") {
       setActiveInput(null);
     }
@@ -356,17 +361,27 @@ export default function IsiDataPelanggan({
               activeInput === "ktp" ||
               activeInput === "pelangganId"
                 ? "numeric"
-                : "default"
+                : shiftActive
+                  ? "shift"
+                  : "default"
             }
             onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             inputName={activeInput}
             layout={{
               default: [
-                "q w e r t y u i o p",
-                "a s d f g h j k l",
-                "{shift} z x c v b n m {bksp}",
-                "{space} {enter}",
+                "` 1 2 3 4 5 6 7 8 9 0 - = {bksp}",
+                "{tab} q w e r t y u i o p [ ] \\",
+                "{lock} a s d f g h j k l ; ' {enter}",
+                "{shift} z x c v b n m , . / {shift}",
+                ".com @ {space}",
+              ],
+              shift: [
+                "~ ! @ # $ % ^ & * ( ) _ + {bksp}",
+                "{tab} Q W E R T Y U I O P { } |",
+                '{lock} A S D F G H J K L : " {enter}',
+                "{shift} Z X C V B N M < > ? {shift}",
+                ".com @ {space}",
               ],
               numeric: [
                 "1 2 3",
@@ -377,16 +392,18 @@ export default function IsiDataPelanggan({
               ],
             }}
             display={{
-              "{enter}": "↵",
-              "{shift}": "⇧",
-              "{bksp}": "⌫",
-              "{space}": "Space",
+              "{enter}": "< enter",
+              "{shift}": "shift",
+              "{bksp}": "backspace",
+              "{lock}": "caps",
+              "{tab}": "tab",
+              "{space}": " ",
             }}
             theme="hg-theme-default hg-layout-default"
             buttonTheme={[
               {
                 class: "hg-button-lg",
-                buttons: "{enter} {shift} {bksp} {space}",
+                buttons: "{enter} {shift} {bksp} {tab} {lock}",
               },
             ]}
           />
