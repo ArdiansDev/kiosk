@@ -7,6 +7,9 @@ const path = require("node:path");
 
 const DEV_SERVER_URL =
   process.env.ELECTRON_RENDERER_URL || "http://127.0.0.1:3000";
+// Bind to 0.0.0.0 so the server is reachable from other devices on the LAN.
+const PROD_SERVER_BIND_HOST = "0.0.0.0";
+// The Electron window connects to itself over the loopback interface.
 const PROD_SERVER_HOST = "127.0.0.1";
 const PROD_SERVER_PORT_START = 3000;
 
@@ -14,6 +17,72 @@ let mainWindow = null;
 let productionServerUrl = null;
 let standaloneServerStarted = false;
 let appBaseUrl = null;
+
+// Capture all console output and uncaught errors to a log file in userData.
+// The packaged GUI process has no visible stdout, so Server Component render
+// errors (the "An error occurred in the Server Components render" 500s) would
+// otherwise be lost. Patch console.* BEFORE the Next standalone server is
+// required so its server-side error logs (with the React error digest and
+// real stack) are persisted.
+let logFilePath = null;
+
+const setupFileLogging = () => {
+  try {
+    const logDir = path.join(app.getPath("userData"), "logs");
+    fs.mkdirSync(logDir, { recursive: true });
+    logFilePath = path.join(logDir, "kiosk.log");
+    const stream = fs.createWriteStream(logFilePath, { flags: "a" });
+
+    const format = (value) => {
+      if (value instanceof Error) {
+        return value.stack || `${value.name}: ${value.message}`;
+      }
+      if (typeof value === "object" && value !== null) {
+        try {
+          return JSON.stringify(value);
+        } catch {
+          return String(value);
+        }
+      }
+      return String(value);
+    };
+
+    const write = (level, args) => {
+      const line = `[${new Date().toISOString()}] [${level}] ${args
+        .map(format)
+        .join(" ")}\n`;
+      stream.write(line);
+    };
+
+    const original = {
+      log: console.log.bind(console),
+      warn: console.warn.bind(console),
+      error: console.error.bind(console),
+    };
+
+    console.log = (...args) => {
+      write("log", args);
+      original.log(...args);
+    };
+    console.warn = (...args) => {
+      write("warn", args);
+      original.warn(...args);
+    };
+    console.error = (...args) => {
+      write("error", args);
+      original.error(...args);
+    };
+
+    process.on("uncaughtException", (error) => write("uncaughtException", [error]));
+    process.on("unhandledRejection", (reason) =>
+      write("unhandledRejection", [reason]),
+    );
+
+    console.log(`[kiosk] Logging to ${logFilePath}`);
+  } catch {
+    // Best effort; never block startup on logging setup.
+  }
+};
 
 const readJsonFile = (filePath) => {
   if (!fs.existsSync(filePath)) {
@@ -92,7 +161,7 @@ const isPortAvailable = (port) =>
       server.close(() => resolve(true));
     });
 
-    server.listen(port, PROD_SERVER_HOST);
+    server.listen(port, PROD_SERVER_BIND_HOST);
   });
 
 const findAvailablePort = async (startPort) => {
@@ -148,7 +217,7 @@ const ensureStandaloneServer = async () => {
   }
 
   process.env.NODE_ENV = "production";
-  process.env.HOSTNAME = PROD_SERVER_HOST;
+  process.env.HOSTNAME = PROD_SERVER_BIND_HOST;
   process.env.PORT = String(serverPort);
 
   // Always use the absolute writable DB path in userData. The Next standalone
@@ -398,6 +467,7 @@ ipcMain.handle("print-ticket", async (_event, params) => {
 
 app.whenReady().then(async () => {
   try {
+    setupFileLogging();
     applyElectronRuntimeConfig();
     await createMainWindow();
   } catch (error) {

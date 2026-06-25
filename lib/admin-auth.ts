@@ -1,7 +1,7 @@
 import "server-only";
 
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 
 export const ADMIN_SESSION_COOKIE_NAME = "kiosk_admin_session";
@@ -9,6 +9,19 @@ export const ADMIN_SESSION_COOKIE_NAME = "kiosk_admin_session";
 const SESSION_TTL_SECONDS = 60 * 60 * 12;
 const ADMIN_APP_ENV = "admin";
 const DEFAULT_LOGIN_PATH = "/admin/login";
+
+// The Electron build serves the app over plain http://127.0.0.1, so a `Secure`
+// cookie would be silently dropped by Chromium and the admin session would
+// never persist (login appears to succeed but bounces straight back to the
+// login page). Derive `secure` from the actual request protocol instead of
+// NODE_ENV: only mark the cookie Secure when the request really arrived over
+// HTTPS (e.g. a reverse-proxied web deployment).
+const isSecureRequest = async () => {
+  const headerStore = await headers();
+  const forwardedProto = headerStore.get("x-forwarded-proto");
+
+  return forwardedProto?.split(",")[0]?.trim().toLowerCase() === "https";
+};
 
 type AdminSessionPayload = {
   username: string;
@@ -163,7 +176,7 @@ export const createAdminSession = async () => {
   cookieStore.set(ADMIN_SESSION_COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: await isSecureRequest(),
     path: "/",
     expires: new Date(expiresAt),
   });
@@ -175,7 +188,7 @@ export const clearAdminSession = async () => {
   cookieStore.set(ADMIN_SESSION_COOKIE_NAME, "", {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: await isSecureRequest(),
     path: "/",
     expires: new Date(0),
   });

@@ -12,7 +12,7 @@ const nextBin = path.join(
   "next",
 );
 const host = process.env.KIOSK_DEV_HOST || "127.0.0.1";
-const preferredPort = Number(process.env.KIOSK_DEV_PORT || "3100");
+const preferredPort = Number(process.env.KIOSK_DEV_PORT || "3000");
 const devServerStatePath = path.join(projectRoot, ".next", "dev-server.json");
 
 const getProjectRoot = () => projectRoot;
